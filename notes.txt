@@ -1,0 +1,98 @@
+This is a basic guide for a individual who is trying to learn MERN from scratch without watching any tutorial
+
+1.   basic structure
+open the terminal -> ctrl + `
+now we have to start creating our server in backend
+create a folder called backend -> move inside the backend folder
+npm init -y -> it installs your package.json file
+npm i express -> it installs the node modules and package-lock.json
+
+2.  Now we have to create a server   
+then create a src folder under that create a file ap.js
+and create a file on the backend directory called server.js
+
+app.js (file)
+
+const express = require('express')
+const app = express()
+app.get('/',(req,res)=>{
+    res.send("Hello world")
+})
+module.exports = app
+
+server.js(file)
+
+const app = require('./src/app')
+app.listen(4000,()=>{
+    console.log("Listening to port 4000")
+})
+
+the basic server setup is done start using npx nodemon server.js
+another way is we create "start" : "npx nodemon server.js"
+
+create a .env file  install dotenv package and in server.js require it at the top 
+require('dotenv').config()
+Because to get access to anything before the server starts we needs our environment variables
+
+backend/
+│
+├── controllers/ ->the logic of the routes are written under controller
+├── models/ -> Model = application's interface to your data structure/database operations
+├── routes/ -> routes decide which controller to handle the task and controller decide what happen
+├── middleware/ ->Middleware is code that runs during the request-response lifecycle before the final response is sent.
+├── config/ ->usually contains configuration-related code that you want to keep separate from your application logic , basically db connection logic
+├── app.js ->app.js = configure the Express application and connect the pieces together.
+├── server.js -> Start the actual server.
+├── package.json -> Project metadata,Dependencies,Development dependencies,Scripts,Version information
+└── .env -> .env to store the env variables, isn't supposed to be committed to GitHub.
+
+How does the req,res cycle look?
+React
+  ↓
+POST /api/expenses
+  ↓
+Express
+  ↓
+Middleware
+  ↓
+Route
+  ↓
+Controller
+  ↓
+Model
+  ↓
+MongoDB
+
+MongoDB
+  ↓
+Model
+  ↓
+Controller
+  ↓
+Express
+  ↓
+HTTP Response
+  ↓
+React
+  ↓
+Update UI
+
+Now, create a api endpoint in app.js and test it through postman
+app.get('/',(req,res)=>{
+    res.status(200).json({
+        message:"Home page created"
+    })
+    res.send("Home page")
+})
+
+also create a post route and test, then try to parsing using json middleware by sending data in the body from postman
+app.post("/test",(req,res)=>{
+    const data = req.body
+    res.status(201).json({
+        message:"Post message created",
+        data
+    })
+})
+module.exports = app
+
+create routes,controllers to separate the code thats how production level codes are written
