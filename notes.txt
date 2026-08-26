@@ -96,3 +96,6 @@ app.post("/test",(req,res)=>{
 module.exports = app
 
 create routes,controllers to separate the code thats how production level codes are written
+ this structuring of code teaches a lot, so try to do it on own
+
+ create a project -> cluster and them connect it with mongodb compass for the db setup of the project
