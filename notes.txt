@@ -99,3 +99,7 @@ create routes,controllers to separate the code thats how production level codes 
  this structuring of code teaches a lot, so try to do it on own
 
  create a project -> cluster and them connect it with mongodb compass for the db setup of the project
+
+ Now we need to move to the schema section where we need to define how the data should look like in our database
+
+ after you create the schema you create a test_db.js under the src and try to see if the schema created by you actually working or not if it fine it will reflect in your mongo compass
