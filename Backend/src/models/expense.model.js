@@ -1,11 +1,6 @@
 const mongoose = require('mongoose')
 
 const expenseSchema = new mongoose.Schema({
-    title:{
-        type:String,
-        required:true,
-        maxLength:50,
-    },
     amount:{
         type:Number,
         required:true,

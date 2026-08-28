@@ -103,3 +103,40 @@ create routes,controllers to separate the code thats how production level codes 
  Now we need to move to the schema section where we need to define how the data should look like in our database
 
  after you create the schema you create a test_db.js under the src and try to see if the schema created by you actually working or not if it fine it will reflect in your mongo compass
+
+ creating an expense architecture
+                     POST /api/expenses
+                           │
+                           ▼
+                       app.js
+                           │
+                           │ mounted router
+                           ▼
+                  expense.routes.js
+                           │
+                           │ createExpense
+                           ▼
+                expense.controller.js
+                           │
+                           │ expenseModel.create()
+                           ▼
+                   expense.model.js
+                           │
+                           ▼
+                       Mongoose
+                           │
+                           ▼
+                    MongoDB Atlas
+                           │
+                           ▼
+                  Created document
+                           │
+                           ▼
+                expense.controller.js
+                           │
+                           ▼
+                       Response
+
+
+we need to create expense api, how we can do that?
+we have to create a controller, a route and we have to access through app.js              
