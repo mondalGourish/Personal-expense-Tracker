@@ -53,4 +53,41 @@ const getExpenseById = async (req, res) => {
     res.status(400).json({ success: false, error: "Provide right id" });
   }
 };
-module.exports = { createExpense, getExpenses,getExpenseById };
+const updateExpenseById = async (req, res) => {
+  try {
+    const expense = await Expense.findByIdAndUpdate(req.params.id, req.body, {
+      returnDocument: "after", //new: true, //returns modified document
+      runValidators: true, //follows the schema rules
+    });
+    if (!expense) {
+      return res.status(404).json({
+        success: false,
+        error: "Expense not found",
+      });
+    }
+    res.status(200).json({ success: true, data: expense });
+  } catch (error) {
+    res.status(400).json({ success: false, error: error.message });
+  }
+};
+const deleteExpenseById = async (req, res) => {
+  try {
+    const expense = await Expense.findByIdAndDelete(req.params.id);
+    if (!expense) {
+      return res.status(404).json({
+        success: false,
+        error: "Expense not found",
+      });
+    }
+    res.status(200).json({ success: true, data:{} });
+  } catch (error) {
+    res.status(400).json({ success: false, error: error.message });
+  }
+};
+module.exports = {
+  createExpense,
+  getExpenses,
+  getExpenseById,
+  updateExpenseById,
+  deleteExpenseById
+};

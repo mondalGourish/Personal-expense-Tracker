@@ -139,4 +139,41 @@ create routes,controllers to separate the code thats how production level codes 
 
 
 we need to create expense api, how we can do that?
-we have to create a controller, a route and we have to access through app.js              
+we have to create a controller, a route and we have to access through app.js
+
+first create a post api, then get, then getById, then update, then delete
+
+                    CURRENT
+                       ↓
+                 CRUD API ✓
+                       │
+                       ▼
+              Request Validation
+                    (Joi)
+                       │
+                       ▼
+              Filtering & Queries
+                       │
+                       ▼
+             Authentication (JWT)
+                       │
+                       ▼
+               Authorization
+                       │
+                       ▼
+             Reports / Aggregation
+                       │
+                       ▼
+                React Frontend
+                       │
+                       ▼
+                API Integration
+                       │
+                       ▼
+                   Testing
+                       │
+                       ▼
+                 Deployment
+                       │
+                       ▼
+              Production debugging
