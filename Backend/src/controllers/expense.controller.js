@@ -28,7 +28,25 @@ const createExpense = async (req, res) => {
 
 const getExpenses = async (req, res) => {
   try {
-    const expenses = await Expense.find();
+    // 1. Check if there is a category in the URL query string
+    const { category,maxAmount  } = req.query;
+
+    // 2. Create an empty filter object
+    let filter = {};
+
+    // 3. If a category exists, add it to the filter object
+    if (category) {
+      // Case-insensitive regex matching (e.g., 'food' matches 'Food')
+      filter.category = { $regex: category, $options: "i" };
+    }
+    if (maxAmount) {
+      // Convert the string parameter from the URL to a numeric integer
+      filter.amount = { $lte: parseInt(maxAmount) };
+    }
+
+    // 4. Pass the filter object into .find()
+    // If filter is empty {}, Mongoose automatically returns ALL expenses!
+    const expenses = await Expense.find(filter).sort({ date: -1 });
     res.status(200).json({
       success: true,
       count: expenses.length,
@@ -79,7 +97,7 @@ const deleteExpenseById = async (req, res) => {
         error: "Expense not found",
       });
     }
-    res.status(200).json({ success: true, data:{} });
+    res.status(200).json({ success: true, data: {} });
   } catch (error) {
     res.status(400).json({ success: false, error: error.message });
   }
@@ -89,5 +107,5 @@ module.exports = {
   getExpenses,
   getExpenseById,
   updateExpenseById,
-  deleteExpenseById
+  deleteExpenseById,
 };
