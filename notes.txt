@@ -181,3 +181,5 @@ first create a post api, then get, then getById, then update, then delete
 now we need to validate the data coming through the api request using JOI
 
 after validating we need to create a middleware to use the validation
+
+the middleware will check the coming request and the response
