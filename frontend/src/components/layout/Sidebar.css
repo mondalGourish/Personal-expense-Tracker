@@ -1,0 +1,230 @@
+.app-sidebar {
+  width: var(--sidebar-width);
+  height: 100vh;
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  background-color: var(--sidebar-bg);
+  border-right: 1px solid var(--sidebar-border);
+  display: flex;
+  flex-direction: column;
+  padding: 24px 16px;
+  z-index: 100;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow-y: auto;
+}
+
+/* Brand */
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 8px 24px 8px;
+  position: relative;
+}
+
+.brand-logo-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: var(--primary-gradient);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.4);
+}
+
+.brand-title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #ffffff;
+}
+
+.sidebar-mobile-close {
+  display: none;
+  margin-left: auto;
+  color: #94a3b8;
+}
+
+/* Nav links */
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+.sidebar-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  color: var(--sidebar-text);
+  font-weight: 600;
+  font-size: 0.9375rem;
+  transition: var(--transition);
+  position: relative;
+}
+
+.sidebar-nav-item:hover {
+  color: #ffffff;
+  background-color: var(--sidebar-item-hover);
+}
+
+.sidebar-nav-item.active {
+  background: var(--primary-gradient);
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);
+}
+
+.nav-icon {
+  flex-shrink: 0;
+}
+
+/* Go Premium Card */
+.sidebar-premium-card {
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  border-radius: var(--radius-lg);
+  padding: 20px 16px;
+  color: #ffffff;
+  margin: 20px 0 16px 0;
+  box-shadow: 0 8px 20px rgba(79, 70, 229, 0.3);
+}
+
+.premium-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.crown-icon {
+  color: #fde047;
+}
+
+.premium-badge-text {
+  font-weight: 700;
+  font-size: 0.9375rem;
+}
+
+.premium-desc {
+  font-size: 0.775rem;
+  color: #e0e7ff;
+  line-height: 1.4;
+  margin-bottom: 14px;
+}
+
+.premium-btn {
+  width: 100%;
+  padding: 9px;
+  border-radius: var(--radius-sm);
+  background-color: #ffffff;
+  color: #5b21b6;
+  font-weight: 700;
+  font-size: 0.8125rem;
+  transition: var(--transition);
+}
+
+.premium-btn:hover {
+  background-color: #f5f3ff;
+  transform: translateY(-1px);
+}
+
+/* Footer / Theme switch */
+.sidebar-footer {
+  padding-top: 16px;
+  border-top: 1px solid var(--sidebar-border);
+}
+
+.theme-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 8px;
+}
+
+.theme-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8125rem;
+  color: var(--sidebar-text);
+  font-weight: 500;
+}
+
+/* Toggle Switch */
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background-color: #334155;
+  transition: 0.3s;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: 0.3s;
+}
+
+input:checked + .slider {
+  background-color: var(--primary);
+}
+
+input:checked + .slider:before {
+  transform: translateX(20px);
+}
+
+.slider.round {
+  border-radius: 34px;
+}
+
+.slider.round:before {
+  border-radius: 50%;
+}
+
+/* Mobile Sidebar Backdrop */
+.sidebar-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 90;
+}
+
+/* Responsive */
+@media (max-width: 991px) {
+  .app-sidebar {
+    transform: translateX(-100%);
+  }
+
+  .app-sidebar.sidebar-open {
+    transform: translateX(0);
+  }
+
+  .sidebar-mobile-close {
+    display: block;
+  }
+}

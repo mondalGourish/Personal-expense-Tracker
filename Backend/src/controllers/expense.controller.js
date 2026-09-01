@@ -1,64 +1,131 @@
+const mongoose = require("mongoose");
 const Expense = require("../models/expense.model");
+const budgetService = require("../services/budget.service");
 
-const createExpense = async (req, res) => {
+/**
+ * @desc    Create a new expense and return updated budget limits/remaining balance
+ * @route   POST /api/expenses
+ */
+const createExpense = async (req, res, next) => {
   try {
-    const { amount, category, description } = req.body;
+    const userId = req.user ? req.user._id : null;
+    const { amount, category, description, date } = req.body;
 
-    //check if all data is present or not
-    if (!amount || !category) {
-      return res.status(400).json({
-        success: false,
-        error: "Please provide all fields",
-      });
-    }
-    //if present then move to storing the data
     const expense = await Expense.create({
+      user: userId,
       amount,
       category,
-      description,
+      description: description || "",
+      date: date || new Date(),
     });
+
+    // Calculate real-time budget status after this expense
+    const budgetStatus = await budgetService.calculateBudgetStatus(userId, expense.date);
+
     res.status(201).json({
       success: true,
-      data: expense,
+      message: "Expense recorded successfully",
+      data: {
+        expense,
+        budgetStatus,
+      },
     });
   } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
+    next(error);
   }
 };
 
-const getExpenses = async (req, res) => {
+/**
+ * @desc    Get all expenses with filtering, sorting, and pagination
+ * @route   GET /api/expenses
+ */
+const getExpenses = async (req, res, next) => {
   try {
-    // 1. Check if there is a category in the URL query string
-    const { category,maxAmount  } = req.query;
+    const userId = req.user ? req.user._id : null;
+    const {
+      category,
+      minAmount,
+      maxAmount,
+      startDate,
+      endDate,
+      page = 1,
+      limit = 20,
+      sortBy = "date",
+      sortOrder = "desc",
+    } = req.query;
 
-    // 2. Create an empty filter object
-    let filter = {};
+    const filter = {};
 
-    // 3. If a category exists, add it to the filter object
+    // User scope
+    if (userId) {
+      filter.user = userId;
+    }
+
+    // Category filter
     if (category) {
-      // Case-insensitive regex matching (e.g., 'food' matches 'Food')
       filter.category = { $regex: category, $options: "i" };
     }
-    if (maxAmount) {
-      // Convert the string parameter from the URL to a numeric integer
-      filter.amount = { $lte: parseInt(maxAmount) };
+
+    // Amount range filter
+    if (minAmount !== undefined || maxAmount !== undefined) {
+      filter.amount = {};
+      if (minAmount !== undefined) filter.amount.$gte = Number(minAmount);
+      if (maxAmount !== undefined) filter.amount.$lte = Number(maxAmount);
     }
 
-    // 4. Pass the filter object into .find()
-    // If filter is empty {}, Mongoose automatically returns ALL expenses!
-    const expenses = await Expense.find(filter).sort({ date: -1 });
+    // Date range filter
+    if (startDate || endDate) {
+      filter.date = {};
+      if (startDate) filter.date.$gte = new Date(startDate);
+      if (endDate) {
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999);
+        filter.date.$lte = end;
+      }
+    }
+
+    const pageNum = parseInt(page, 10) || 1;
+    const limitNum = parseInt(limit, 10) || 20;
+    const skip = (pageNum - 1) * limitNum;
+    const sort = { [sortBy]: sortOrder === "asc" ? 1 : -1 };
+
+    const [expenses, total] = await Promise.all([
+      Expense.find(filter).sort(sort).skip(skip).limit(limitNum),
+      Expense.countDocuments(filter),
+    ]);
+
     res.status(200).json({
       success: true,
+      pagination: {
+        total,
+        page: pageNum,
+        limit: limitNum,
+        totalPages: Math.ceil(total / limitNum) || 1,
+      },
       count: expenses.length,
       data: expenses,
     });
   } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
+    next(error);
   }
 };
-const getExpenseById = async (req, res) => {
+
+/**
+ * @desc    Get a single expense by ID
+ * @route   GET /api/expenses/:id
+ */
+const getExpenseById = async (req, res, next) => {
   try {
-    const expense = await Expense.findById(req.params.id);
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        error: "Invalid expense ID format",
+      });
+    }
+
+    const expense = await Expense.findById(id);
 
     if (!expense) {
       return res.status(404).json({
@@ -66,42 +133,99 @@ const getExpenseById = async (req, res) => {
         error: "Expense not found",
       });
     }
-    res.status(200).json({ success: true, data: expense });
-  } catch (error) {
-    res.status(400).json({ success: false, error: "Provide right id" });
-  }
-};
-const updateExpenseById = async (req, res) => {
-  try {
-    const expense = await Expense.findByIdAndUpdate(req.params.id, req.body, {
-      returnDocument: "after", //new: true, //returns modified document
-      runValidators: true, //follows the schema rules
+
+    res.status(200).json({
+      success: true,
+      data: expense,
     });
-    if (!expense) {
-      return res.status(404).json({
-        success: false,
-        error: "Expense not found",
-      });
-    }
-    res.status(200).json({ success: true, data: expense });
   } catch (error) {
-    res.status(400).json({ success: false, error: error.message });
+    next(error);
   }
 };
-const deleteExpenseById = async (req, res) => {
+
+/**
+ * @desc    Update an expense by ID and return updated budget status
+ * @route   PUT /api/expenses/:id
+ */
+const updateExpenseById = async (req, res, next) => {
   try {
-    const expense = await Expense.findByIdAndDelete(req.params.id);
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        error: "Invalid expense ID format",
+      });
+    }
+
+    const expense = await Expense.findByIdAndUpdate(id, req.body, {
+      new: true,
+      runValidators: true,
+    });
+
     if (!expense) {
       return res.status(404).json({
         success: false,
         error: "Expense not found",
       });
     }
-    res.status(200).json({ success: true, data: {} });
+
+    const userId = req.user ? req.user._id : null;
+    const budgetStatus = await budgetService.calculateBudgetStatus(userId, expense.date);
+
+    res.status(200).json({
+      success: true,
+      message: "Expense updated successfully",
+      data: {
+        expense,
+        budgetStatus,
+      },
+    });
   } catch (error) {
-    res.status(400).json({ success: false, error: error.message });
+    next(error);
   }
 };
+
+/**
+ * @desc    Delete an expense by ID and return updated budget status
+ * @route   DELETE /api/expenses/:id
+ */
+const deleteExpenseById = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        error: "Invalid expense ID format",
+      });
+    }
+
+    const expense = await Expense.findByIdAndDelete(id);
+
+    if (!expense) {
+      return res.status(404).json({
+        success: false,
+        error: "Expense not found",
+      });
+    }
+
+    const userId = req.user ? req.user._id : null;
+    const budgetStatus = await budgetService.calculateBudgetStatus(userId, expense.date);
+
+    res.status(200).json({
+      success: true,
+      message: "Expense deleted successfully",
+      data: {
+        deletedId: id,
+        budgetStatus,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   createExpense,
   getExpenses,

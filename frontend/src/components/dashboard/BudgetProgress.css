@@ -1,0 +1,83 @@
+.budget-progress-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  box-shadow: var(--shadow-card);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.budget-progress-list {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.budget-progress-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.budget-item-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.budget-category-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.budget-cat-name {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.budget-stats {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.budget-fraction {
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+}
+
+.spent-val {
+  color: var(--text-primary);
+}
+
+.budget-percent-badge {
+  font-size: 0.775rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.percent-warning {
+  color: var(--warning);
+}
+
+.percent-exceeded {
+  color: var(--danger);
+}
+
+.budget-track {
+  width: 100%;
+  height: 7px;
+  background-color: var(--bg-card-subtle);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.budget-bar {
+  height: 100%;
+  border-radius: var(--radius-full);
+  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}

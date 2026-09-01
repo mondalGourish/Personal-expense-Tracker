@@ -1,0 +1,72 @@
+.dashboard-chart-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  box-shadow: var(--shadow-card);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.chart-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.chart-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.chart-timeframe-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  background-color: var(--bg-card-subtle);
+  border: 1px solid var(--border-color);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  transition: var(--transition);
+}
+
+.chart-timeframe-btn:hover {
+  color: var(--text-primary);
+  background-color: var(--border-subtle);
+}
+
+.chart-body {
+  flex: 1;
+  width: 100%;
+  min-height: 250px;
+}
+
+/* Custom SaaS Styled Tooltip */
+.chart-custom-tooltip {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-lg);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  text-align: center;
+  pointer-events: none;
+}
+
+.tooltip-date {
+  font-size: 0.725rem;
+  color: var(--text-muted);
+  font-weight: 500;
+  margin-bottom: 2px;
+}
+
+.tooltip-amount {
+  font-size: 0.9375rem;
+  font-weight: 800;
+  color: var(--primary);
+}

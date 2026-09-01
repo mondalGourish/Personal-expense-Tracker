@@ -1,0 +1,116 @@
+.expense-filters-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 16px 20px;
+  box-shadow: var(--shadow-card);
+  margin-bottom: 20px;
+}
+
+.filters-grid {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.filter-item {
+  flex: 1;
+  min-width: 160px;
+}
+
+.filter-item.search-filter {
+  flex: 2;
+  min-width: 260px;
+}
+
+.filter-input-wrapper,
+.filter-sort-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.filter-search-icon,
+.sort-icon {
+  position: absolute;
+  left: 12px;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.filter-clear-btn {
+  position: absolute;
+  right: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+}
+
+.filter-clear-btn:hover {
+  background-color: var(--bg-card-subtle);
+  color: var(--text-primary);
+}
+
+.filter-search-input {
+  width: 100%;
+  padding: 9px 34px 9px 36px;
+  font-size: 0.875rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-card-subtle);
+  color: var(--text-primary);
+  transition: var(--transition);
+}
+
+.filter-select {
+  width: 100%;
+  padding: 9px 12px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-card-subtle);
+  color: var(--text-primary);
+  transition: var(--transition);
+  cursor: pointer;
+}
+
+.filter-select.sort-select {
+  padding-left: 34px;
+}
+
+.filter-search-input:focus,
+.filter-select:focus {
+  border-color: var(--primary);
+  background-color: var(--bg-card);
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.12);
+}
+
+.btn-reset-filters {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--danger);
+  background-color: var(--danger-bg);
+  transition: var(--transition);
+  white-space: nowrap;
+}
+
+.btn-reset-filters:hover {
+  background-color: #fee2e2;
+}
+
+@media (max-width: 768px) {
+  .filter-item {
+    min-width: 100%;
+  }
+}

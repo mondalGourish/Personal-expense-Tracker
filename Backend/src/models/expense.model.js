@@ -1,29 +1,50 @@
-const mongoose = require('mongoose')
+const mongoose = require("mongoose");
 
-const expenseSchema = new mongoose.Schema({
-    amount:{
-        type:Number,
-        required:true,
-        min:[1,"Your expense is less than 1"],
-        max:[100000000,"Your expense is exceeding our limit"]
+const expenseSchema = new mongoose.Schema(
+  {
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+      index: true,
     },
-    category:{
-        type:String,
-        required:true,
-        enum:['Food','Groceries','Transport','Bills','Shopping','Health','Education','Other'],
-        
+    amount: {
+      type: Number,
+      required: [true, "Amount is required"],
+      min: [1, "Your expense is less than 1"],
+      max: [100000000, "Your expense is exceeding our limit"],
     },
-    date:{
-        type:Date,
-        required:true,
-        default:Date.now,
+    category: {
+      type: String,
+      required: [true, "Category is required"],
+      enum: [
+        "Food",
+        "Groceries",
+        "Transport",
+        "Bills",
+        "Shopping",
+        "Health",
+        "Education",
+        "Other",
+      ],
     },
-    description:{
-        type:String,
+    date: {
+      type: Date,
+      required: true,
+      default: Date.now,
+      index: true,
     },
-},{timestamps:true})
+    description: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+  },
+  { timestamps: true }
+);
 
-//timestamps true means automatically manages the createdAt and updatedAt
+// Compound index for efficient user-specific date range queries and analytics
+expenseSchema.index({ user: 1, date: -1 });
 
-const expenseModel = mongoose.model('Expense',expenseSchema)
-module.exports = expenseModel
+const Expense = mongoose.model("Expense", expenseSchema);
+module.exports = Expense;

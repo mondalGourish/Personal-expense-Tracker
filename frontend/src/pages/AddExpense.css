@@ -1,0 +1,124 @@
+.add-expense-page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.add-expense-layout {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 24px;
+  align-items: start;
+}
+
+.add-form-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  box-shadow: var(--shadow-card);
+}
+
+.form-card-header {
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.card-subtext {
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+}
+
+/* Side info column */
+.add-info-column {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.info-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 22px;
+  box-shadow: var(--shadow-card);
+}
+
+.info-card-header,
+.tip-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.info-icon {
+  color: var(--primary);
+}
+
+.sparkle-icon {
+  color: #f59e0b;
+}
+
+.info-card-title {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.budget-info-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.budget-info-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.875rem;
+}
+
+.info-row-label {
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.info-row-val {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.divider-line {
+  height: 1px;
+  background-color: var(--border-color);
+  margin: 4px 0;
+}
+
+.highlight-row .info-row-label {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.remaining-val {
+  color: var(--success);
+  font-size: 1rem;
+}
+
+.tip-card {
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.05) 0%, rgba(99, 102, 241, 0.08) 100%);
+  border: 1px solid rgba(124, 58, 237, 0.2);
+}
+
+.tip-text {
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+@media (max-width: 900px) {
+  .add-expense-layout {
+    grid-template-columns: 1fr;
+  }
+}

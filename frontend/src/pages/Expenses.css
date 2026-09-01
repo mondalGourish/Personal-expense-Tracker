@@ -1,0 +1,67 @@
+.expenses-page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.page-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.page-heading {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+}
+
+.page-subheading {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.page-actions-group {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.total-expense-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-full);
+  box-shadow: var(--shadow-xs);
+  font-size: 0.8125rem;
+}
+
+.pill-label {
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.pill-amount {
+  color: var(--primary);
+  font-weight: 800;
+  font-size: 0.9375rem;
+}
+
+@media (max-width: 600px) {
+  .page-header-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .page-actions-group {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
