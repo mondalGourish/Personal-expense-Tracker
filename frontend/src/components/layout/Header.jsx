@@ -6,15 +6,15 @@ import {
   Menu,
   Check,
   User,
-  ShieldCheck,
   LogOut,
 } from "lucide-react";
-import { useExpenses } from "../../context/ExpenseContext";
+import { useAuth } from "../../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 import "./Header.css";
 
 export const Header = ({ onToggleSidebar }) => {
-  const { user } = useExpenses();
-  const [showNotifications, setShowNotifications] = useState(false);
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [selectedRange, setSelectedRange] = useState("This Week");
   const [showRangeDropdown, setShowRangeDropdown] = useState(false);
@@ -27,29 +27,14 @@ export const Header = ({ onToggleSidebar }) => {
     return "Good evening";
   };
 
-  const notifications = [
-    {
-      id: 1,
-      title: "Budget Alert",
-      text: "You have used 86% of your weekly budget.",
-      time: "10m ago",
-      type: "warning",
-    },
-    {
-      id: 2,
-      title: "Monthly Summary Ready",
-      text: "Your August expense report is ready to download.",
-      time: "2h ago",
-      type: "info",
-    },
-    {
-      id: 3,
-      title: "New Category Added",
-      text: "Education category limit has been set to ₹2,000.",
-      time: "1d ago",
-      type: "success",
-    },
-  ];
+  // Display name from real authenticated user
+  const displayName = user?.name || "there";
+
+  const handleLogout = async () => {
+    setShowProfileMenu(false);
+    await logout();
+    navigate("/login", { replace: true });
+  };
 
   return (
     <header className="app-header">
@@ -64,7 +49,7 @@ export const Header = ({ onToggleSidebar }) => {
 
         <div className="header-greeting-wrapper">
           <h1 className="header-title">
-            {getGreeting()}, {user.name}! <span className="greeting-wave">👋</span>
+            {getGreeting()}, {displayName}! <span className="greeting-wave">👋</span>
           </h1>
           <p className="header-subtitle">
             Here's what's happening with your finances today.
@@ -105,39 +90,15 @@ export const Header = ({ onToggleSidebar }) => {
           )}
         </div>
 
-        {/* Notifications Bell */}
+        {/* Notifications Bell - visual only */}
         <div className="dropdown-container">
           <button
             className="icon-action-btn"
-            onClick={() => setShowNotifications(!showNotifications)}
             aria-label="Notifications"
+            title="Notifications coming soon"
           >
             <Bell size={18} />
-            <span className="notification-badge" />
           </button>
-
-          {showNotifications && (
-            <div className="dropdown-menu notifications-menu animate-fade-in">
-              <div className="dropdown-header">
-                <span className="dropdown-title">Notifications</span>
-                <span className="badge-count">3 New</span>
-              </div>
-              <div className="notifications-list">
-                {notifications.map((n) => (
-                  <div key={n.id} className="notification-item">
-                    <div className={`notification-dot dot-${n.type}`} />
-                    <div className="notification-content">
-                      <div className="notification-title-row">
-                        <span className="notif-title">{n.title}</span>
-                        <span className="notif-time">{n.time}</span>
-                      </div>
-                      <p className="notif-text">{n.text}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
 
         {/* User Profile */}
@@ -147,10 +108,10 @@ export const Header = ({ onToggleSidebar }) => {
             onClick={() => setShowProfileMenu(!showProfileMenu)}
           >
             <div className="user-avatar">
-              <span>{user.name.charAt(0)}</span>
+              <span>{displayName.charAt(0).toUpperCase()}</span>
             </div>
             <div className="user-info-text">
-              <span className="user-name">{user.name}</span>
+              <span className="user-name">{displayName}</span>
             </div>
             <ChevronDown size={14} className="chevron-icon" />
           </button>
@@ -159,11 +120,11 @@ export const Header = ({ onToggleSidebar }) => {
             <div className="dropdown-menu profile-menu animate-fade-in">
               <div className="profile-dropdown-header">
                 <div className="user-avatar lg">
-                  <span>{user.name.charAt(0)}</span>
+                  <span>{displayName.charAt(0).toUpperCase()}</span>
                 </div>
                 <div>
-                  <div className="profile-name">{user.name}</div>
-                  <div className="profile-email">{user.email}</div>
+                  <div className="profile-name">{user?.name}</div>
+                  <div className="profile-email">{user?.email}</div>
                 </div>
               </div>
               <div className="dropdown-divider" />
@@ -171,20 +132,18 @@ export const Header = ({ onToggleSidebar }) => {
                 className="dropdown-item"
                 onClick={() => {
                   setShowProfileMenu(false);
-                  window.location.hash = "#/settings";
+                  navigate("/settings");
                 }}
               >
                 <User size={16} />
                 <span>Account Settings</span>
               </button>
               <button
-                className="dropdown-item"
-                onClick={() => {
-                  setShowProfileMenu(false);
-                }}
+                className="dropdown-item danger-item"
+                onClick={handleLogout}
               >
-                <ShieldCheck size={16} />
-                <span>Privacy & Security</span>
+                <LogOut size={16} />
+                <span>Sign Out</span>
               </button>
             </div>
           )}

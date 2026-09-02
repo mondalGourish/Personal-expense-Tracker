@@ -33,7 +33,7 @@ export const ExpenseTable = ({ expenses = [] }) => {
 
   const handleDeleteConfirm = () => {
     if (deletingExpense) {
-      deleteExpense(deletingExpense.id);
+      deleteExpense(deletingExpense._id);
       setDeletingExpense(null);
     }
   };
@@ -54,7 +54,7 @@ export const ExpenseTable = ({ expenses = [] }) => {
           </thead>
           <tbody>
             {paginatedExpenses.map((item) => (
-              <tr key={item.id} className="expense-table-row">
+              <tr key={item._id} className="expense-table-row">
                 <td className="col-category">
                   <div className="category-cell">
                     <CategoryIcon category={item.category} size="md" />
@@ -109,7 +109,7 @@ export const ExpenseTable = ({ expenses = [] }) => {
       {/* Mobile Card List View */}
       <div className="mobile-expense-cards">
         {paginatedExpenses.map((item) => (
-          <div key={item.id} className="mobile-expense-card">
+          <div key={item._id} className="mobile-expense-card">
             <div className="mobile-card-top">
               <div className="mobile-lead">
                 <CategoryIcon category={item.category} size="md" />

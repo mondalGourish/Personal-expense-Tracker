@@ -3,13 +3,13 @@ const budgetService = require("../services/budget.service");
 /**
  * @desc    Set or update weekly and monthly budget limits
  * @route   POST /api/budgets
+ * @access  Private
  */
 const setBudget = async (req, res, next) => {
   try {
-    const userId = req.user ? req.user._id : null;
     const { weeklyBudget, monthlyBudget, currency, alertThreshold, categoryBudgets } = req.body;
 
-    const budget = await budgetService.setBudget(userId, {
+    const budget = await budgetService.setBudget(req.user._id, {
       weeklyBudget,
       monthlyBudget,
       currency: currency || "INR",
@@ -17,7 +17,7 @@ const setBudget = async (req, res, next) => {
       categoryBudgets: categoryBudgets || {},
     });
 
-    const currentStatus = await budgetService.calculateBudgetStatus(userId);
+    const currentStatus = await budgetService.calculateBudgetStatus(req.user._id);
 
     res.status(200).json({
       success: true,
@@ -33,13 +33,13 @@ const setBudget = async (req, res, next) => {
 };
 
 /**
- * @desc    Get currently configured budget limits
+ * @desc    Get currently configured budget limits for the authenticated user
  * @route   GET /api/budgets
+ * @access  Private
  */
 const getBudget = async (req, res, next) => {
   try {
-    const userId = req.user ? req.user._id : null;
-    const budget = await budgetService.getBudget(userId);
+    const budget = await budgetService.getBudget(req.user._id);
 
     if (!budget) {
       return res.status(200).json({
@@ -59,15 +59,14 @@ const getBudget = async (req, res, next) => {
 };
 
 /**
- * @desc    Get real-time budget status (spent vs remaining limits for week & month)
+ * @desc    Get real-time budget status for the authenticated user
  * @route   GET /api/budgets/status
+ * @access  Private
  */
 const getBudgetStatus = async (req, res, next) => {
   try {
-    const userId = req.user ? req.user._id : null;
     const referenceDate = req.query.date ? new Date(req.query.date) : new Date();
-
-    const status = await budgetService.calculateBudgetStatus(userId, referenceDate);
+    const status = await budgetService.calculateBudgetStatus(req.user._id, referenceDate);
 
     res.status(200).json({
       success: true,

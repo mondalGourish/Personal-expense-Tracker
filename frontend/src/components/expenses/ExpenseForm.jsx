@@ -102,38 +102,36 @@ export const ExpenseForm = ({
     setIsLoading(true);
     setErrors({});
 
-    // Simulate realistic async operation (350ms)
-    setTimeout(() => {
-      try {
-        if (initialData && initialData.id) {
-          editExpense(initialData.id, formData);
-        } else {
-          addExpense(formData);
-        }
-
-        setIsLoading(false);
-        setIsSuccess(true);
-
-        setTimeout(() => {
-          if (onSuccess) {
-            onSuccess();
-          } else {
-            // Reset if on standalone page
-            setFormData({
-              amount: "",
-              category: "Food",
-              description: "",
-              date: new Date().toISOString().split("T")[0],
-            });
-            setTouched({});
-            setIsSuccess(false);
-          }
-        }, 600);
-      } catch (err) {
-        setIsLoading(false);
-        setErrors({ form: "Failed to save expense. Please try again." });
+    try {
+      // Use _id for MongoDB documents (real API)
+      if (initialData && initialData._id) {
+        await editExpense(initialData._id, formData);
+      } else {
+        await addExpense(formData);
       }
-    }, 400);
+
+      setIsLoading(false);
+      setIsSuccess(true);
+
+      setTimeout(() => {
+        if (onSuccess) {
+          onSuccess();
+        } else {
+          // Reset if on standalone page
+          setFormData({
+            amount: "",
+            category: "Food",
+            description: "",
+            date: new Date().toISOString().split("T")[0],
+          });
+          setTouched({});
+          setIsSuccess(false);
+        }
+      }, 600);
+    } catch (err) {
+      setIsLoading(false);
+      setErrors({ form: err.message || "Failed to save expense. Please try again." });
+    }
   };
 
   return (

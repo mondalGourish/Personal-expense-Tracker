@@ -2,25 +2,25 @@
  * Centralized Error Handling Middleware
  */
 const errorHandler = (err, req, res, next) => {
-  let error = { ...err };
-  error.message = err.message;
-
-  // Log error for development
-  console.error("❌ Error Handler caught:", err);
+  // Log full error in development
+  if (process.env.NODE_ENV !== "production") {
+    console.error("❌ Error Handler caught:", err);
+  }
 
   // Mongoose Bad ObjectId (CastError)
   if (err.name === "CastError") {
     return res.status(400).json({
       success: false,
-      error: `Resource not found with invalid ID format`,
+      error: "Invalid ID format",
     });
   }
 
-  // Mongoose Duplicate Key Error
+  // Mongoose Duplicate Key Error → 409 Conflict
   if (err.code === 11000) {
-    return res.status(400).json({
+    const field = Object.keys(err.keyValue || {})[0] || "field";
+    return res.status(409).json({
       success: false,
-      error: "Duplicate field value entered",
+      error: `An account with this ${field} already exists`,
     });
   }
 
@@ -33,10 +33,30 @@ const errorHandler = (err, req, res, next) => {
     });
   }
 
+  // JWT — invalid signature or malformed token
+  if (err.name === "JsonWebTokenError") {
+    return res.status(401).json({
+      success: false,
+      error: "Invalid authentication token. Please log in again.",
+    });
+  }
+
+  // JWT — token has expired
+  if (err.name === "TokenExpiredError") {
+    return res.status(401).json({
+      success: false,
+      error: "Your session has expired. Please log in again.",
+    });
+  }
+
   // Fallback 500 Internal Server Error
+  // Never expose stack traces to clients
   res.status(err.statusCode || 500).json({
     success: false,
-    error: error.message || "Internal Server Error",
+    error:
+      process.env.NODE_ENV === "production"
+        ? "Internal Server Error"
+        : err.message || "Internal Server Error",
   });
 };
 

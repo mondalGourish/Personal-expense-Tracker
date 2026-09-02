@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useExpenses } from "../context/ExpenseContext";
+import { useAuth } from "../context/AuthContext";
 import { Button } from "../components/common/Button";
 import {
   User,
@@ -8,17 +9,13 @@ import {
   Sun,
   Bell,
   Sliders,
-  Shield,
   Save,
   CheckCircle2,
-  Trash2,
 } from "lucide-react";
 import "./Settings.css";
 
 export const Settings = () => {
   const {
-    user,
-    setUser,
     settings,
     setSettings,
     budget,
@@ -27,12 +24,10 @@ export const Settings = () => {
     showToast,
   } = useExpenses();
 
-  // Local Form States
-  const [profileForm, setProfileForm] = useState({
-    name: user.name,
-    email: user.email,
-  });
+  // Real authenticated user from AuthContext
+  const { user } = useAuth();
 
+  // Budget form local state
   const [budgetForm, setBudgetForm] = useState({
     weeklyBudget: budget.weeklyBudget,
     monthlyBudget: budget.monthlyBudget,
@@ -40,6 +35,7 @@ export const Settings = () => {
   });
 
   const [selectedCurrency, setSelectedCurrency] = useState(settings.currency);
+  const [budgetSaving, setBudgetSaving] = useState(false);
 
   const currencies = [
     { code: "INR", symbol: "₹", name: "Indian Rupee (INR)" },
@@ -48,19 +44,20 @@ export const Settings = () => {
     { code: "GBP", symbol: "£", name: "British Pound (GBP)" },
   ];
 
-  const handleProfileSave = (e) => {
+  const handleBudgetSave = async (e) => {
     e.preventDefault();
-    setUser((prev) => ({ ...prev, ...profileForm }));
-    showToast("Profile information updated successfully!");
-  };
-
-  const handleBudgetSave = (e) => {
-    e.preventDefault();
-    updateBudget({
-      weeklyBudget: Number(budgetForm.weeklyBudget),
-      monthlyBudget: Number(budgetForm.monthlyBudget),
-      alertThreshold: Number(budgetForm.alertThreshold),
-    });
+    setBudgetSaving(true);
+    try {
+      await updateBudget({
+        weeklyBudget: Number(budgetForm.weeklyBudget),
+        monthlyBudget: Number(budgetForm.monthlyBudget),
+        alertThreshold: Number(budgetForm.alertThreshold),
+      });
+    } catch (err) {
+      showToast("Failed to save budget. Please try again.", "error");
+    } finally {
+      setBudgetSaving(false);
+    }
   };
 
   const handleCurrencyChange = (curr) => {
@@ -89,70 +86,35 @@ export const Settings = () => {
       <div className="settings-page-header">
         <h2 className="page-heading">Settings & Preferences</h2>
         <p className="page-subheading">
-          Customize your profile, budget limits, currency, and notifications.
+          Customize your budget limits, currency, appearance, and notifications.
         </p>
       </div>
 
       <div className="settings-sections-list">
-        {/* 1. Profile Information */}
+        {/* 1. Account Info (read-only — from AuthContext) */}
         <div className="settings-card">
           <div className="settings-card-header">
             <div className="settings-icon-lead">
               <User size={20} className="icon-purple" />
               <div>
-                <h3 className="settings-section-title">Profile Information</h3>
-                <p className="settings-section-sub">Update your personal account details</p>
+                <h3 className="settings-section-title">Account Information</h3>
+                <p className="settings-section-sub">Your registered account details</p>
               </div>
             </div>
           </div>
 
-          <form onSubmit={handleProfileSave} className="settings-form">
-            <div className="profile-edit-row">
-              <div className="user-avatar lg">
-                <span>{profileForm.name.charAt(0)}</span>
-              </div>
-              <div className="profile-meta-text">
-                <span className="profile-name-bold">{profileForm.name}</span>
-                <span className="profile-badge-role">{user.role}</span>
-              </div>
+          <div className="profile-edit-row">
+            <div className="user-avatar lg">
+              <span>{user?.name?.charAt(0)?.toUpperCase() || "U"}</span>
             </div>
-
-            <div className="settings-form-grid">
-              <div className="form-group">
-                <label className="form-label" htmlFor="user-name">Full Name</label>
-                <input
-                  id="user-name"
-                  type="text"
-                  className="form-input"
-                  value={profileForm.name}
-                  onChange={(e) =>
-                    setProfileForm((prev) => ({ ...prev, name: e.target.value }))
-                  }
-                  required
-                />
-              </div>
-
-              <div className="form-group">
-                <label className="form-label" htmlFor="user-email">Email Address</label>
-                <input
-                  id="user-email"
-                  type="email"
-                  className="form-input"
-                  value={profileForm.email}
-                  onChange={(e) =>
-                    setProfileForm((prev) => ({ ...prev, email: e.target.value }))
-                  }
-                  required
-                />
-              </div>
+            <div className="profile-meta-text">
+              <span className="profile-name-bold">{user?.name || "—"}</span>
+              <span className="profile-email-sub">{user?.email || "—"}</span>
             </div>
-
-            <div className="settings-form-footer">
-              <Button type="submit" variant="primary" icon={Save}>
-                Save Profile
-              </Button>
-            </div>
-          </form>
+          </div>
+          <p className="settings-section-sub" style={{ marginTop: 12, fontSize: "0.8rem" }}>
+            To update your name or email, contact support (profile editing coming soon).
+          </p>
         </div>
 
         {/* 2. Budget Limits Configuration */}
@@ -237,7 +199,7 @@ export const Settings = () => {
             </div>
 
             <div className="settings-form-footer">
-              <Button type="submit" variant="primary" icon={Save}>
+              <Button type="submit" variant="primary" icon={Save} loading={budgetSaving}>
                 Save Budget Limits
               </Button>
             </div>
@@ -313,7 +275,7 @@ export const Settings = () => {
           </div>
         </div>
 
-        {/* 5. Notification Preferences */}
+        {/* 5. Notification Preferences (client-side only) */}
         <div className="settings-card">
           <div className="settings-card-header">
             <div className="settings-icon-lead">
@@ -330,7 +292,7 @@ export const Settings = () => {
               <div>
                 <span className="notif-row-title">Budget Threshold Alerts</span>
                 <p className="notif-row-desc">
-                  Notify when total spending reaches 80% of weekly or monthly limits.
+                  Notify when total spending reaches your configured alert threshold.
                 </p>
               </div>
               <label className="toggle-switch">

@@ -6,7 +6,6 @@ import {
   PlusCircle,
   BarChart3,
   Settings,
-  Crown,
   Moon,
   Sun,
   Wallet,
@@ -16,7 +15,7 @@ import { useExpenses } from "../../context/ExpenseContext";
 import "./Sidebar.css";
 
 export const Sidebar = ({ isOpen, onClose }) => {
-  const { settings, toggleTheme, user } = useExpenses();
+  const { settings, toggleTheme } = useExpenses();
 
   const navItems = [
     { label: "Dashboard", path: "/", icon: LayoutDashboard },
@@ -65,24 +64,7 @@ export const Sidebar = ({ isOpen, onClose }) => {
           })}
         </nav>
 
-        {/* Go Premium Card (matching SaaS mockup) */}
-        <div className="sidebar-premium-card">
-          <div className="premium-header">
-            <Crown size={18} className="crown-icon" />
-            <span className="premium-badge-text">Go Premium</span>
-          </div>
-          <p className="premium-desc">
-            Unlock advanced analytics, custom budgets, and AI insights.
-          </p>
-          <button
-            className="premium-btn"
-            onClick={() => alert("Premium feature demo coming soon!")}
-          >
-            Upgrade Now
-          </button>
-        </div>
-
-        {/* Sidebar Footer: Theme Toggle & Profile info */}
+        {/* Sidebar Footer: Theme Toggle */}
         <div className="sidebar-footer">
           <div className="theme-toggle-row">
             <div className="theme-label">

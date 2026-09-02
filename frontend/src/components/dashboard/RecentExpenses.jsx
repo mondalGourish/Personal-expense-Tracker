@@ -24,7 +24,7 @@ export const RecentExpenses = () => {
       ) : (
         <div className="recent-expenses-list">
           {recentList.map((item) => (
-            <div key={item.id} className="recent-expense-row">
+            <div key={item._id} className="recent-expense-row">
               <div className="expense-lead">
                 <CategoryIcon category={item.category} size="md" />
                 <div className="expense-meta">

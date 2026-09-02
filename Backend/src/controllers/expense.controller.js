@@ -3,24 +3,37 @@ const Expense = require("../models/expense.model");
 const budgetService = require("../services/budget.service");
 
 /**
- * @desc    Create a new expense and return updated budget limits/remaining balance
+ * Safely attempt to calculate budget status after a mutation.
+ * If budget calculation fails, the primary expense operation is unaffected.
+ */
+async function tryGetBudgetStatus(userId, referenceDate) {
+  try {
+    return await budgetService.calculateBudgetStatus(userId, referenceDate);
+  } catch (err) {
+    console.error("⚠️  Budget status calculation failed (non-critical):", err.message);
+    return null;
+  }
+}
+
+/**
+ * @desc    Create a new expense
  * @route   POST /api/expenses
+ * @access  Private
  */
 const createExpense = async (req, res, next) => {
   try {
-    const userId = req.user ? req.user._id : null;
     const { amount, category, description, date } = req.body;
 
     const expense = await Expense.create({
-      user: userId,
+      user: req.user._id, // Always from authenticated session — never from body
       amount,
       category,
       description: description || "",
       date: date || new Date(),
     });
 
-    // Calculate real-time budget status after this expense
-    const budgetStatus = await budgetService.calculateBudgetStatus(userId, expense.date);
+    // Secondary: get updated budget status (failure does not affect this response)
+    const budgetStatus = await tryGetBudgetStatus(req.user._id, expense.date);
 
     res.status(201).json({
       success: true,
@@ -36,12 +49,12 @@ const createExpense = async (req, res, next) => {
 };
 
 /**
- * @desc    Get all expenses with filtering, sorting, and pagination
+ * @desc    Get all expenses for the authenticated user
  * @route   GET /api/expenses
+ * @access  Private
  */
 const getExpenses = async (req, res, next) => {
   try {
-    const userId = req.user ? req.user._id : null;
     const {
       category,
       minAmount,
@@ -54,12 +67,8 @@ const getExpenses = async (req, res, next) => {
       sortOrder = "desc",
     } = req.query;
 
-    const filter = {};
-
-    // User scope
-    if (userId) {
-      filter.user = userId;
-    }
+    // Always scope to authenticated user
+    const filter = { user: req.user._id };
 
     // Category filter
     if (category) {
@@ -87,6 +96,8 @@ const getExpenses = async (req, res, next) => {
     const pageNum = parseInt(page, 10) || 1;
     const limitNum = parseInt(limit, 10) || 20;
     const skip = (pageNum - 1) * limitNum;
+
+    // sortBy is already validated by Joi to be one of: date, amount, category, createdAt
     const sort = { [sortBy]: sortOrder === "asc" ? 1 : -1 };
 
     const [expenses, total] = await Promise.all([
@@ -111,8 +122,9 @@ const getExpenses = async (req, res, next) => {
 };
 
 /**
- * @desc    Get a single expense by ID
+ * @desc    Get a single expense by ID (must belong to authenticated user)
  * @route   GET /api/expenses/:id
+ * @access  Private
  */
 const getExpenseById = async (req, res, next) => {
   try {
@@ -125,7 +137,8 @@ const getExpenseById = async (req, res, next) => {
       });
     }
 
-    const expense = await Expense.findById(id);
+    // Ownership-aware query — returns 404 whether not found OR belongs to another user
+    const expense = await Expense.findOne({ _id: id, user: req.user._id });
 
     if (!expense) {
       return res.status(404).json({
@@ -144,8 +157,9 @@ const getExpenseById = async (req, res, next) => {
 };
 
 /**
- * @desc    Update an expense by ID and return updated budget status
- * @route   PUT /api/expenses/:id
+ * @desc    Partially update an expense by ID (must belong to authenticated user)
+ * @route   PATCH /api/expenses/:id
+ * @access  Private
  */
 const updateExpenseById = async (req, res, next) => {
   try {
@@ -158,10 +172,20 @@ const updateExpenseById = async (req, res, next) => {
       });
     }
 
-    const expense = await Expense.findByIdAndUpdate(id, req.body, {
-      new: true,
-      runValidators: true,
-    });
+    // Allowlist: only these fields can be updated — user, _id, createdAt cannot be changed
+    const { amount, category, description, date } = req.body;
+    const updateFields = {};
+    if (amount !== undefined) updateFields.amount = amount;
+    if (category !== undefined) updateFields.category = category;
+    if (description !== undefined) updateFields.description = description;
+    if (date !== undefined) updateFields.date = date;
+
+    // Ownership-aware update — only updates if the expense belongs to the authenticated user
+    const expense = await Expense.findOneAndUpdate(
+      { _id: id, user: req.user._id },
+      updateFields,
+      { new: true, runValidators: true }
+    );
 
     if (!expense) {
       return res.status(404).json({
@@ -170,8 +194,8 @@ const updateExpenseById = async (req, res, next) => {
       });
     }
 
-    const userId = req.user ? req.user._id : null;
-    const budgetStatus = await budgetService.calculateBudgetStatus(userId, expense.date);
+    // Secondary: budget status (non-critical)
+    const budgetStatus = await tryGetBudgetStatus(req.user._id, expense.date);
 
     res.status(200).json({
       success: true,
@@ -187,8 +211,9 @@ const updateExpenseById = async (req, res, next) => {
 };
 
 /**
- * @desc    Delete an expense by ID and return updated budget status
+ * @desc    Delete an expense by ID (must belong to authenticated user)
  * @route   DELETE /api/expenses/:id
+ * @access  Private
  */
 const deleteExpenseById = async (req, res, next) => {
   try {
@@ -201,7 +226,8 @@ const deleteExpenseById = async (req, res, next) => {
       });
     }
 
-    const expense = await Expense.findByIdAndDelete(id);
+    // Ownership-aware delete
+    const expense = await Expense.findOneAndDelete({ _id: id, user: req.user._id });
 
     if (!expense) {
       return res.status(404).json({
@@ -210,8 +236,8 @@ const deleteExpenseById = async (req, res, next) => {
       });
     }
 
-    const userId = req.user ? req.user._id : null;
-    const budgetStatus = await budgetService.calculateBudgetStatus(userId, expense.date);
+    // Secondary: budget status (non-critical)
+    const budgetStatus = await tryGetBudgetStatus(req.user._id, expense.date);
 
     res.status(200).json({
       success: true,

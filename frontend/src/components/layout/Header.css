@@ -327,6 +327,15 @@
   background-color: var(--primary-50);
 }
 
+.dropdown-item.danger-item {
+  color: var(--danger);
+}
+
+.dropdown-item.danger-item:hover {
+  background-color: var(--danger-bg);
+  color: var(--danger);
+}
+
 /* Mobile Responsive */
 @media (max-width: 991px) {
   .app-header {

@@ -7,8 +7,12 @@ const {
   getBudgetStatus,
 } = require("../controllers/budget.controller");
 
+const { authenticate } = require("../middleware/auth.middleware");
 const validate = require("../middleware/validate.middleware");
 const { setBudgetSchema } = require("../../validators/budget.validator");
+
+// All budget endpoints require authentication
+router.use(authenticate);
 
 // Budget endpoints
 router.post("/", validate(setBudgetSchema), setBudget);

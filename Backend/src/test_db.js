@@ -11,10 +11,9 @@ async function runTest() {
         await connectDB();
 
         const testDoc = new expenseModel({
-            title: "Dinner at Restaurant",
             amount: 850,
             category: "Food",
-            description: "Dinner with friends"
+            description: "Dinner with friends",
         });
 
         const savedDoc = await testDoc.save();
