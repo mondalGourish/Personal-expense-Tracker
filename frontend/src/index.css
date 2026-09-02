@@ -2,25 +2,25 @@
   /* Typography */
   --font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   
-  /* Primary Theme Colors (Purple Accent matching SaaS reference) */
-  --primary-50: #f5f3ff;
-  --primary-100: #ede9fe;
-  --primary-200: #ddd6fe;
-  --primary-300: #c4b5fd;
-  --primary-400: #a78bfa;
-  --primary-500: #8b5cf6;
-  --primary-600: #7c3aed;
-  --primary-700: #6d28d9;
-  --primary-800: #5b21b6;
-  --primary-900: #4c1d95;
-  --primary: #7c3aed;
-  --primary-hover: #6d28d9;
-  --primary-gradient: linear-gradient(135deg, #7c3aed 0%, #6366f1 100%);
-  --primary-glow: 0 4px 20px rgba(124, 58, 237, 0.35);
+  /* Primary Theme Colors — Midnight Emerald */
+  --primary-50: #ecfdf5;
+  --primary-100: #d1fae5;
+  --primary-200: #a7f3d0;
+  --primary-300: #6ee7b7;
+  --primary-400: #34d399;
+  --primary-500: #10b981;
+  --primary-600: #059669;
+  --primary-700: #047857;
+  --primary-800: #065f46;
+  --primary-900: #064e3b;
+  --primary: #10b981;
+  --primary-hover: #059669;
+  --primary-gradient: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  --primary-glow: 0 4px 20px rgba(16, 185, 129, 0.35);
 
-  /* Sidebar Dark Navy */
-  --sidebar-bg: #0d1322;
-  --sidebar-border: #1a2236;
+  /* Sidebar Midnight Navy */
+  --sidebar-bg: #0b1220;
+  --sidebar-border: #151f32;
   --sidebar-text: #94a3b8;
   --sidebar-text-active: #ffffff;
   --sidebar-item-hover: rgba(255, 255, 255, 0.06);
@@ -53,13 +53,13 @@
   --info-bg: #f0f9ff;
   --info-border: #bae6fd;
 
-  /* Category Specific Colors */
-  --cat-food: #8b5cf6;
-  --cat-food-bg: #ede9fe;
+  /* Category Specific Colors (Visually Distinct) */
+  --cat-food: #10b981;
+  --cat-food-bg: #d1fae5;
   --cat-transport: #0ea5e9;
   --cat-transport-bg: #e0f2fe;
-  --cat-shopping: #10b981;
-  --cat-shopping-bg: #d1fae5;
+  --cat-shopping: #059669;
+  --cat-shopping-bg: #ecfdf5;
   --cat-bills: #f43f5e;
   --cat-bills-bg: #ffe4e6;
   --cat-health: #14b8a6;
@@ -90,20 +90,20 @@
   --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Dark Theme Support */
+/* Dark Theme Support — Midnight Emerald */
 [data-theme="dark"] {
-  --bg-app: #090d16;
-  --bg-card: #111827;
-  --bg-card-subtle: #1f2937;
-  --bg-input: #1f2937;
-  --border-color: #1f2937;
-  --border-subtle: #111827;
+  --bg-app: #080d1a;
+  --bg-card: #0f172a;
+  --bg-card-subtle: #1e293b;
+  --bg-input: #1e293b;
+  --border-color: #1e293b;
+  --border-subtle: #0f172a;
   --text-primary: #f8fafc;
   --text-secondary: #cbd5e1;
   --text-muted: #64748b;
-  --shadow-card: 0 4px 12px rgba(0, 0, 0, 0.3);
-  --sidebar-bg: #070a12;
-  --sidebar-border: #131b2e;
+  --shadow-card: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --sidebar-bg: #060a14;
+  --sidebar-border: #111a2e;
 }
 
 /* Global Reset & Base Styles */
@@ -173,8 +173,8 @@ a {
 }
 
 @keyframes pulseGlow {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(124, 58, 237, 0.4); }
-  50% { box-shadow: 0 0 0 8px rgba(124, 58, 237, 0); }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+  50% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
 }
 
 .animate-fade-in {

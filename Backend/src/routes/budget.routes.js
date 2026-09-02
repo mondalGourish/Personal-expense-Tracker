@@ -9,7 +9,10 @@ const {
 
 const { authenticate } = require("../middleware/auth.middleware");
 const validate = require("../middleware/validate.middleware");
-const { setBudgetSchema } = require("../../validators/budget.validator");
+const {
+  setBudgetSchema,
+  queryBudgetStatusSchema,
+} = require("../../validators/budget.validator");
 
 // All budget endpoints require authentication
 router.use(authenticate);
@@ -17,6 +20,6 @@ router.use(authenticate);
 // Budget endpoints
 router.post("/", validate(setBudgetSchema), setBudget);
 router.get("/", getBudget);
-router.get("/status", getBudgetStatus);
+router.get("/status", validate(queryBudgetStatusSchema, "query"), getBudgetStatus);
 
 module.exports = router;

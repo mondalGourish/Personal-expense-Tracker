@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useExpenses } from "../context/ExpenseContext";
 import { useAuth } from "../context/AuthContext";
 import { Button } from "../components/common/Button";
@@ -27,12 +27,23 @@ export const Settings = () => {
   // Real authenticated user from AuthContext
   const { user } = useAuth();
 
-  // Budget form local state
+  // Budget form local state — safely handles budget === null
   const [budgetForm, setBudgetForm] = useState({
-    weeklyBudget: budget.weeklyBudget,
-    monthlyBudget: budget.monthlyBudget,
-    alertThreshold: budget.alertThreshold || 80,
+    weeklyBudget: budget?.weeklyBudget ?? 5000,
+    monthlyBudget: budget?.monthlyBudget ?? 20000,
+    alertThreshold: budget?.alertThreshold ?? 80,
   });
+
+  // Keep form in sync when budget finishes loading
+  useEffect(() => {
+    if (budget) {
+      setBudgetForm({
+        weeklyBudget: budget.weeklyBudget,
+        monthlyBudget: budget.monthlyBudget,
+        alertThreshold: budget.alertThreshold || 80,
+      });
+    }
+  }, [budget]);
 
   const [selectedCurrency, setSelectedCurrency] = useState(settings.currency);
   const [budgetSaving, setBudgetSaving] = useState(false);
@@ -95,7 +106,7 @@ export const Settings = () => {
         <div className="settings-card">
           <div className="settings-card-header">
             <div className="settings-icon-lead">
-              <User size={20} className="icon-purple" />
+              <User size={20} className="icon-emerald" />
               <div>
                 <h3 className="settings-section-title">Account Information</h3>
                 <p className="settings-section-sub">Your registered account details</p>
@@ -113,7 +124,7 @@ export const Settings = () => {
             </div>
           </div>
           <p className="settings-section-sub" style={{ marginTop: 12, fontSize: "0.8rem" }}>
-            To update your name or email, contact support (profile editing coming soon).
+            Account authenticated securely via JWT session.
           </p>
         </div>
 
@@ -121,7 +132,7 @@ export const Settings = () => {
         <div className="settings-card">
           <div className="settings-card-header">
             <div className="settings-icon-lead">
-              <Sliders size={20} className="icon-purple" />
+              <Sliders size={20} className="icon-emerald" />
               <div>
                 <h3 className="settings-section-title">Budget Limit Configuration</h3>
                 <p className="settings-section-sub">
@@ -193,7 +204,7 @@ export const Settings = () => {
                   required
                 />
                 <span className="form-helper">
-                  Triggers warning badge when spending crosses this percentage of your limit.
+                  Triggers warning indicator when spending crosses this percentage of your limit.
                 </span>
               </div>
             </div>
@@ -210,7 +221,7 @@ export const Settings = () => {
         <div className="settings-card">
           <div className="settings-card-header">
             <div className="settings-icon-lead">
-              <DollarSign size={20} className="icon-purple" />
+              <DollarSign size={20} className="icon-emerald" />
               <div>
                 <h3 className="settings-section-title">Currency Preference</h3>
                 <p className="settings-section-sub">
@@ -246,7 +257,7 @@ export const Settings = () => {
         <div className="settings-card">
           <div className="settings-card-header">
             <div className="settings-icon-lead">
-              <Moon size={20} className="icon-purple" />
+              <Moon size={20} className="icon-emerald" />
               <div>
                 <h3 className="settings-section-title">Appearance & Theme</h3>
                 <p className="settings-section-sub">Choose between Light and Dark visual modes</p>
@@ -261,7 +272,7 @@ export const Settings = () => {
             >
               <Sun size={24} className="theme-opt-icon" />
               <span className="theme-opt-title">Light Mode</span>
-              <span className="theme-opt-desc">Clean white UI with purple accents</span>
+              <span className="theme-opt-desc">Clean slate UI with emerald accents</span>
             </button>
 
             <button
@@ -270,7 +281,7 @@ export const Settings = () => {
             >
               <Moon size={24} className="theme-opt-icon" />
               <span className="theme-opt-title">Dark Mode</span>
-              <span className="theme-opt-desc">Sleek high-contrast dark dashboard</span>
+              <span className="theme-opt-desc">Midnight navy dashboard with emerald highlights</span>
             </button>
           </div>
         </div>
@@ -279,7 +290,7 @@ export const Settings = () => {
         <div className="settings-card">
           <div className="settings-card-header">
             <div className="settings-icon-lead">
-              <Bell size={20} className="icon-purple" />
+              <Bell size={20} className="icon-emerald" />
               <div>
                 <h3 className="settings-section-title">Notification Preferences</h3>
                 <p className="settings-section-sub">Control in-app alerts and budget notifications</p>

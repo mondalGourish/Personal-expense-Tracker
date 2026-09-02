@@ -3,12 +3,13 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { Link } from "react-router-dom";
 import { useExpenses } from "../../context/ExpenseContext";
 import { formatCurrency, getCategoryMeta } from "../../data/mockExpenses";
+import { PieChart as PieIcon } from "lucide-react";
 import "./CategoryChart.css";
 
 export const CategoryChart = () => {
   const { expenses, settings } = useExpenses();
 
-  // Aggregate category data from actual expenses
+  // Aggregate category data strictly from user's actual expenses
   const categoryData = useMemo(() => {
     const map = {};
     let total = 0;
@@ -19,19 +20,8 @@ export const CategoryChart = () => {
       total += Number(exp.amount);
     });
 
-    // If empty, supply placeholder data matching mockup
     if (total === 0) {
-      return {
-        total: 12450,
-        items: [
-          { name: "Food", value: 3250, color: "#8B5CF6", percent: 26 },
-          { name: "Transport", value: 2150, color: "#0EA5E9", percent: 17 },
-          { name: "Shopping", value: 1980, color: "#10B981", percent: 16 },
-          { name: "Bills", value: 1750, color: "#F43F5E", percent: 14 },
-          { name: "Health", value: 1200, color: "#14B8A6", percent: 10 },
-          { name: "Others", value: 2120, color: "#64748B", percent: 17 },
-        ],
-      };
+      return { total: 0, items: [] };
     }
 
     const items = Object.entries(map).map(([category, amount]) => {
@@ -60,58 +50,78 @@ export const CategoryChart = () => {
         </Link>
       </div>
 
-      <div className="category-chart-content">
-        {/* Donut Chart with Center Total */}
-        <div className="donut-wrapper">
-          <ResponsiveContainer width={190} height={190}>
-            <PieChart>
-              <Pie
-                data={categoryData.items}
-                cx="50%"
-                cy="50%"
-                innerRadius={62}
-                outerRadius={88}
-                paddingAngle={4}
-                dataKey="value"
-              >
-                {categoryData.items.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} stroke="none" />
-                ))}
-              </Pie>
-              <Tooltip
-                formatter={(val) => formatCurrency(val, settings.currencySymbol)}
-              />
-            </PieChart>
-          </ResponsiveContainer>
-          <div className="donut-center-label">
-            <span className="donut-total">
-              {formatCurrency(categoryData.total, settings.currencySymbol).split(".")[0]}
-            </span>
-            <span className="donut-sub">Total</span>
+      {categoryData.items.length === 0 ? (
+        <div style={{ height: 200, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", color: "var(--text-muted)", textAlign: "center", padding: 16 }}>
+          <div style={{
+            width: 40,
+            height: 40,
+            borderRadius: "50%",
+            background: "var(--bg-app)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: "var(--primary)",
+            marginBottom: 8,
+          }}>
+            <PieIcon size={18} />
+          </div>
+          <p style={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--text-primary)", marginBottom: 4 }}>No Category Data</p>
+          <p style={{ fontSize: "0.8125rem", color: "var(--text-muted)" }}>Expenses will automatically break down by category as you add them.</p>
+        </div>
+      ) : (
+        <div className="category-chart-content">
+          {/* Donut Chart with Center Total */}
+          <div className="donut-wrapper">
+            <ResponsiveContainer width={190} height={190}>
+              <PieChart>
+                <Pie
+                  data={categoryData.items}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={62}
+                  outerRadius={88}
+                  paddingAngle={4}
+                  dataKey="value"
+                >
+                  {categoryData.items.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} stroke="none" />
+                  ))}
+                </Pie>
+                <Tooltip
+                  formatter={(val) => formatCurrency(val, settings.currencySymbol)}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+            <div className="donut-center-label">
+              <span className="donut-total">
+                {formatCurrency(categoryData.total, settings.currencySymbol).split(".")[0]}
+              </span>
+              <span className="donut-sub">Total</span>
+            </div>
+          </div>
+
+          {/* Legend on the right */}
+          <div className="category-legend-list">
+            {categoryData.items.slice(0, 6).map((item) => (
+              <div key={item.name} className="category-legend-row">
+                <div className="legend-name-group">
+                  <span
+                    className="legend-dot"
+                    style={{ backgroundColor: item.color }}
+                  />
+                  <span className="legend-label">{item.name}</span>
+                </div>
+                <div className="legend-value-group">
+                  <span className="legend-amount">
+                    {formatCurrency(item.value, settings.currencySymbol).split(".")[0]}
+                  </span>
+                  <span className="legend-percent">({item.percent}%)</span>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
-
-        {/* Legend on the right matching reference image */}
-        <div className="category-legend-list">
-          {categoryData.items.slice(0, 6).map((item) => (
-            <div key={item.name} className="category-legend-row">
-              <div className="legend-name-group">
-                <span
-                  className="legend-dot"
-                  style={{ backgroundColor: item.color }}
-                />
-                <span className="legend-label">{item.name}</span>
-              </div>
-              <div className="legend-value-group">
-                <span className="legend-amount">
-                  {formatCurrency(item.value, settings.currencySymbol).split(".")[0]}
-                </span>
-                <span className="legend-percent">({item.percent}%)</span>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+      )}
     </div>
   );
 };

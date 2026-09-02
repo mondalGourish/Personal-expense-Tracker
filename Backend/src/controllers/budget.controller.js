@@ -1,6 +1,19 @@
 const budgetService = require("../services/budget.service");
 
 /**
+ * Safely attempt to calculate budget status after budget mutation.
+ * If status calculation fails, the primary budget operation is unaffected.
+ */
+async function tryGetBudgetStatus(userId, referenceDate) {
+  try {
+    return await budgetService.calculateBudgetStatus(userId, referenceDate);
+  } catch (err) {
+    console.error("⚠️  Budget status calculation failed (non-critical):", err.message);
+    return null;
+  }
+}
+
+/**
  * @desc    Set or update weekly and monthly budget limits
  * @route   POST /api/budgets
  * @access  Private
@@ -17,7 +30,8 @@ const setBudget = async (req, res, next) => {
       categoryBudgets: categoryBudgets || {},
     });
 
-    const currentStatus = await budgetService.calculateBudgetStatus(req.user._id);
+    // Secondary: calculate real-time status (failure does not break the mutation response)
+    const currentStatus = await tryGetBudgetStatus(req.user._id);
 
     res.status(200).json({
       success: true,

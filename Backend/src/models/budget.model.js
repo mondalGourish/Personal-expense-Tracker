@@ -5,7 +5,8 @@ const budgetSchema = new mongoose.Schema(
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      default: null, // Supports single-user or multi-user mode
+      required: [true, "User is required for budget configuration"],
+      unique: true,
       index: true,
     },
     weeklyBudget: {

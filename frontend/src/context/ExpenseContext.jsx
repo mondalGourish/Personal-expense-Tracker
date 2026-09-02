@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
-import { INITIAL_BUDGET, getCategoryMeta } from "../data/mockExpenses";
 import * as expenseService from "../services/expense.service";
 import * as budgetService from "../services/budget.service";
 
@@ -9,10 +8,12 @@ export const ExpenseProvider = ({ children }) => {
   // Expenses — populated from real API
   const [expenses, setExpenses] = useState([]);
   const [expensesLoading, setExpensesLoading] = useState(true);
+  const [expensesError, setExpensesError] = useState(null);
 
-  // Budget — populated from real API, falls back to INITIAL_BUDGET defaults
-  const [budget, setBudgetState] = useState(INITIAL_BUDGET);
+  // Budget — null when not configured on backend, populated when configured
+  const [budget, setBudgetState] = useState(null);
   const [budgetLoading, setBudgetLoading] = useState(true);
+  const [budgetError, setBudgetError] = useState(null);
 
   // UI settings (client-side only — currency, theme, notifications)
   const [settings, setSettings] = useState({
@@ -33,15 +34,20 @@ export const ExpenseProvider = ({ children }) => {
 
   // ── Data Loading ──────────────────────────────────────────────────────────
 
-  /** Load all expenses from the backend */
+  /**
+   * Load expenses from the backend.
+   * Requests limit: 100 to strictly respect backend max allowable query limit.
+   */
   const loadExpenses = useCallback(async () => {
     try {
       setExpensesLoading(true);
-      const response = await expenseService.getExpenses({ limit: 200 });
+      setExpensesError(null);
+      const response = await expenseService.getExpenses({ limit: 100 });
       setExpenses(response.data || []);
+      setExpensesError(null);
     } catch (err) {
       console.error("Failed to load expenses:", err.message);
-      setExpenses([]);
+      setExpensesError(err.message || "Failed to load expenses");
     } finally {
       setExpensesLoading(false);
     }
@@ -51,28 +57,34 @@ export const ExpenseProvider = ({ children }) => {
   const loadBudget = useCallback(async () => {
     try {
       setBudgetLoading(true);
+      setBudgetError(null);
       const response = await budgetService.getBudget();
-      if (response.data) {
-        // Map backend budget fields to local state
-        setBudgetState((prev) => ({
-          ...prev,
-          weeklyBudget: response.data.weeklyBudget ?? prev.weeklyBudget,
-          monthlyBudget: response.data.monthlyBudget ?? prev.monthlyBudget,
-          alertThreshold: response.data.alertThreshold ?? prev.alertThreshold,
-          currency: response.data.currency ?? prev.currency,
+      if (response && response.data) {
+        setBudgetState({
+          weeklyBudget: response.data.weeklyBudget,
+          monthlyBudget: response.data.monthlyBudget,
+          alertThreshold: response.data.alertThreshold || 80,
+          currency: response.data.currency || "INR",
           categoryBudgets: response.data.categoryBudgets
-            ? Object.fromEntries(response.data.categoryBudgets)
-            : prev.categoryBudgets,
-        }));
+            ? response.data.categoryBudgets instanceof Map
+              ? Object.fromEntries(response.data.categoryBudgets)
+              : response.data.categoryBudgets
+            : {},
+        });
+      } else {
+        // Honest null state: user has not configured a budget yet
+        setBudgetState(null);
       }
+      setBudgetError(null);
     } catch (err) {
       console.error("Failed to load budget:", err.message);
+      setBudgetError(err.message || "Failed to load budget configuration");
     } finally {
       setBudgetLoading(false);
     }
   }, []);
 
-  // Load data when provider mounts (user is already authenticated at this point)
+  // Load data when provider mounts
   useEffect(() => {
     loadExpenses();
     loadBudget();
@@ -144,16 +156,23 @@ export const ExpenseProvider = ({ children }) => {
       monthlyBudget: Number(updatedBudget.monthlyBudget),
       alertThreshold: Number(updatedBudget.alertThreshold || 80),
       currency: settings.currency,
+      categoryBudgets: updatedBudget.categoryBudgets || {},
     };
     const response = await budgetService.setBudget(payload);
     const saved = response.data.budget;
-    setBudgetState((prev) => ({
-      ...prev,
+    setBudgetState({
       weeklyBudget: saved.weeklyBudget,
       monthlyBudget: saved.monthlyBudget,
       alertThreshold: saved.alertThreshold,
-    }));
+      currency: saved.currency || "INR",
+      categoryBudgets: saved.categoryBudgets
+        ? saved.categoryBudgets instanceof Map
+          ? Object.fromEntries(saved.categoryBudgets)
+          : saved.categoryBudgets
+        : {},
+    });
     showToast("Budget limits updated successfully!");
+    return saved;
   };
 
   return (
@@ -161,8 +180,10 @@ export const ExpenseProvider = ({ children }) => {
       value={{
         expenses,
         expensesLoading,
+        expensesError,
         budget,
         budgetLoading,
+        budgetError,
         settings,
         toast,
         isAddModalOpen,
@@ -176,6 +197,7 @@ export const ExpenseProvider = ({ children }) => {
         updateBudget,
         setSettings,
         loadExpenses,
+        loadBudget,
       }}
     >
       {children}

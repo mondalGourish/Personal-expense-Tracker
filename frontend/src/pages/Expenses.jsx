@@ -5,11 +5,29 @@ import { ExpenseFilters } from "../components/expenses/ExpenseFilters";
 import { ExpenseTable } from "../components/expenses/ExpenseTable";
 import { EmptyState } from "../components/common/EmptyState";
 import { Button } from "../components/common/Button";
-import { Plus, Download, Receipt } from "lucide-react";
+import { Plus, Receipt, AlertTriangle, RefreshCw } from "lucide-react";
 import "./Expenses.css";
 
+/**
+ * Expenses Page
+ *
+ * Filtering Architecture Note (Part 15):
+ * ---------------------------------------
+ * The backend API supports full server-side filtering (category, minAmount, maxAmount, startDate, endDate, pagination).
+ * For optimal user experience with typical personal expense volumes (up to 100 recent transactions fetched),
+ * real-time client-side sub-filtering provides instantaneous UI feedback without network lag on each keystroke or filter click.
+ * For enterprise datasets with thousands of records, the service layer functions can be swapped to pass query parameters
+ * directly to the server.
+ */
 export const Expenses = () => {
-  const { expenses, settings, setIsAddModalOpen } = useExpenses();
+  const {
+    expenses,
+    expensesLoading,
+    expensesError,
+    settings,
+    setIsAddModalOpen,
+    loadExpenses,
+  } = useExpenses();
 
   // Filter States
   const [search, setSearch] = useState("");
@@ -38,7 +56,7 @@ export const Expenses = () => {
     setSortBy("date-desc");
   };
 
-  // Filter and sort the expenses
+  // Filter and sort the expenses locally
   const filteredExpenses = useMemo(() => {
     let list = [...expenses];
 
@@ -47,8 +65,8 @@ export const Expenses = () => {
       const term = search.toLowerCase();
       list = list.filter(
         (exp) =>
-          exp.description.toLowerCase().includes(term) ||
-          exp.category.toLowerCase().includes(term)
+          (exp.description || "").toLowerCase().includes(term) ||
+          (exp.category || "").toLowerCase().includes(term)
       );
     }
 
@@ -177,15 +195,58 @@ export const Expenses = () => {
         hasActiveFilters={hasActiveFilters}
       />
 
-      {/* Expense List or Empty State */}
-      {filteredExpenses.length === 0 ? (
+      {/* State Flow: Loading -> Error -> Empty -> List */}
+      {expensesLoading ? (
+        <div style={{ padding: "60px 0", textAlign: "center", color: "var(--text-muted)" }}>
+          <div
+            style={{
+              width: 36,
+              height: 36,
+              border: "3px solid var(--border-color)",
+              borderTop: "3px solid var(--primary)",
+              borderRadius: "50%",
+              animation: "spin 0.8s linear infinite",
+              margin: "0 auto 16px",
+            }}
+          />
+          <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+          <p style={{ fontSize: "0.9rem" }}>Loading your expenses...</p>
+        </div>
+      ) : expensesError ? (
+        <div style={{ padding: "48px 24px", textAlign: "center", background: "var(--bg-card)", border: "1px solid var(--border-color)", borderRadius: "var(--radius-lg)" }}>
+          <div
+            style={{
+              width: 52,
+              height: 52,
+              borderRadius: "50%",
+              background: "var(--danger-bg)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "var(--danger)",
+              margin: "0 auto 16px",
+            }}
+          >
+            <AlertTriangle size={24} />
+          </div>
+          <h3 style={{ fontSize: "1.1rem", fontWeight: 700, marginBottom: 8, color: "var(--text-primary)" }}>
+            Unable to Load Expenses
+          </h3>
+          <p style={{ color: "var(--text-secondary)", marginBottom: 20, maxWidth: 400, margin: "0 auto 20px", fontSize: "0.875rem" }}>
+            {expensesError}
+          </p>
+          <Button variant="primary" icon={RefreshCw} onClick={loadExpenses}>
+            Retry Loading
+          </Button>
+        </div>
+      ) : filteredExpenses.length === 0 ? (
         <EmptyState
           icon={Receipt}
-          title="No expenses match your filters"
+          title={hasActiveFilters ? "No expenses match your filters" : "No expenses recorded yet"}
           description={
             hasActiveFilters
               ? "Try adjusting or resetting your search and filter criteria to view more expenses."
-              : "No expenses recorded yet. Click below to add your first expense."
+              : "You haven't added any expenses yet. Click below to record your first transaction."
           }
           actionText={hasActiveFilters ? "Reset Filters" : "Add Expense"}
           onAction={hasActiveFilters ? handleResetFilters : () => setIsAddModalOpen(true)}

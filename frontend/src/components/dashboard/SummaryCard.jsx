@@ -9,8 +9,8 @@ export const SummaryCard = ({
   isPositive = true,
   period = "vs last week",
   icon: Icon,
-  iconBg = "#EDE9FE",
-  iconColor = "#7C3AED",
+  iconBg = "#D1FAE5",
+  iconColor = "#10B981",
 }) => {
   return (
     <div className="summary-card">

@@ -89,18 +89,49 @@ const updateExpenseSchema = Joi.object({
   "object.min": "Please provide at least one field to update",
 });
 
-// Schema for query filtering
+// Schema for query filtering with cross-field validation
 const queryExpenseSchema = Joi.object({
-  category: Joi.string().trim().optional(),
-  minAmount: Joi.number().min(0).optional(),
-  maxAmount: Joi.number().min(0).optional(),
-  startDate: Joi.date().iso().optional(),
-  endDate: Joi.date().iso().optional(),
+  category: Joi.string()
+    .trim()
+    .valid(...ALLOWED_CATEGORIES)
+    .optional()
+    .messages({
+      "any.only": `Category filter must be one of: ${ALLOWED_CATEGORIES.join(", ")}`,
+    }),
+  minAmount: Joi.number().min(0).optional().messages({
+    "number.min": "minAmount cannot be negative",
+  }),
+  maxAmount: Joi.number().min(0).optional().messages({
+    "number.min": "maxAmount cannot be negative",
+  }),
+  startDate: Joi.date().iso().optional().messages({
+    "date.format": "startDate must follow ISO format (YYYY-MM-DD)",
+  }),
+  endDate: Joi.date().iso().optional().messages({
+    "date.format": "endDate must follow ISO format (YYYY-MM-DD)",
+  }),
   page: Joi.number().integer().min(1).default(1),
   limit: Joi.number().integer().min(1).max(100).default(20),
   sortBy: Joi.string().valid("date", "amount", "category", "createdAt").default("date"),
   sortOrder: Joi.string().valid("asc", "desc").default("desc"),
-});
+})
+  .custom((value, helpers) => {
+    // Cross-field: minAmount <= maxAmount
+    if (
+      value.minAmount !== undefined &&
+      value.maxAmount !== undefined &&
+      value.minAmount > value.maxAmount
+    ) {
+      return helpers.message("minAmount cannot be greater than maxAmount");
+    }
+
+    // Cross-field: startDate <= endDate
+    if (value.startDate && value.endDate && new Date(value.startDate) > new Date(value.endDate)) {
+      return helpers.message("startDate cannot be after endDate");
+    }
+
+    return value;
+  });
 
 module.exports = {
   ALLOWED_CATEGORIES,

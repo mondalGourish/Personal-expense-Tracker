@@ -33,7 +33,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.4);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
 }
 
 .brand-title {
@@ -78,60 +78,11 @@
 .sidebar-nav-item.active {
   background: var(--primary-gradient);
   color: #ffffff;
-  box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
 }
 
 .nav-icon {
   flex-shrink: 0;
-}
-
-/* Go Premium Card */
-.sidebar-premium-card {
-  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
-  border-radius: var(--radius-lg);
-  padding: 20px 16px;
-  color: #ffffff;
-  margin: 20px 0 16px 0;
-  box-shadow: 0 8px 20px rgba(79, 70, 229, 0.3);
-}
-
-.premium-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 8px;
-}
-
-.crown-icon {
-  color: #fde047;
-}
-
-.premium-badge-text {
-  font-weight: 700;
-  font-size: 0.9375rem;
-}
-
-.premium-desc {
-  font-size: 0.775rem;
-  color: #e0e7ff;
-  line-height: 1.4;
-  margin-bottom: 14px;
-}
-
-.premium-btn {
-  width: 100%;
-  padding: 9px;
-  border-radius: var(--radius-sm);
-  background-color: #ffffff;
-  color: #5b21b6;
-  font-weight: 700;
-  font-size: 0.8125rem;
-  transition: var(--transition);
-}
-
-.premium-btn:hover {
-  background-color: #f5f3ff;
-  transform: translateY(-1px);
 }
 
 /* Footer / Theme switch */

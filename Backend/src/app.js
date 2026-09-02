@@ -15,31 +15,46 @@ app.use(express.json());
 // Cookie Parser — required for reading HTTP-only auth cookie
 app.use(cookieParser());
 
-// CORS — allow frontend origin with credentials (cookies)
-const allowedOrigins = [
-  process.env.CLIENT_URL,
+// CORS Configuration
+const isProduction = process.env.NODE_ENV === "production";
+
+const allowedDevOrigins = [
   "http://localhost:5173",
   "http://localhost:5174",
   "http://localhost:3000",
   "http://127.0.0.1:5173",
   "http://127.0.0.1:5174",
-].filter(Boolean);
+];
 
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      // Allow requests with no origin (like mobile apps, curl, server-to-server)
-      if (!origin) return callback(null, true);
-      if (allowedOrigins.includes(origin) || /^http:\/\/localhost:\d+$/.test(origin)) {
+const corsOptions = {
+  origin: (origin, callback) => {
+    // Allow requests with no origin (e.g. mobile apps, curl, server-to-server)
+    if (!origin) return callback(null, true);
+
+    if (isProduction) {
+      // In production, strictly match the configured CLIENT_URL
+      if (process.env.CLIENT_URL && origin === process.env.CLIENT_URL) {
         return callback(null, true);
       }
       return callback(new Error(`CORS policy does not allow access from origin ${origin}`));
-    },
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-  })
-);
+    } else {
+      // In development, allow localhost origins or CLIENT_URL
+      if (
+        allowedDevOrigins.includes(origin) ||
+        (process.env.CLIENT_URL && origin === process.env.CLIENT_URL) ||
+        /^http:\/\/localhost:\d+$/.test(origin)
+      ) {
+        return callback(null, true);
+      }
+      return callback(new Error(`CORS policy does not allow access from origin ${origin}`));
+    }
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+};
+
+app.use(cors(corsOptions));
 
 // Health check route
 app.get("/", (req, res) => {

@@ -30,14 +30,20 @@ export async function logout() {
 
 /**
  * Fetch the currently authenticated user's profile.
- * Returns null if not authenticated (instead of throwing).
+ * - Returns user object if authenticated (200 OK)
+ * - Returns null if explicitly unauthenticated (401 Unauthorized)
+ * - Throws error for network errors (status 0) or server errors (500+) so caller can preserve error/retry state
  */
 export async function getMe() {
   try {
     const data = await api.get("/auth/me");
     return data?.data?.user || null;
   } catch (err) {
-    // 401 or any network/CORS error means no active session — return null gracefully
-    return null;
+    // 401 means no active session cookie exists — return null cleanly
+    if (err.status === 401) {
+      return null;
+    }
+    // Network / 500 / CORS error: rethrow so session check distinguishes connection failure from logout
+    throw err;
   }
 }

@@ -33,21 +33,23 @@ function getMonthRange(date = new Date()) {
 }
 
 /**
- * Get or create budget for a user (or default null user)
+ * Get budget for a specific user
  */
-async function getBudget(userId = null) {
-  const query = userId ? { user: userId } : { user: null };
-  return await Budget.findOne(query);
+async function getBudget(userId) {
+  if (!userId) return null;
+  return await Budget.findOne({ user: userId });
 }
 
 /**
- * Create or update budget settings
+ * Create or update budget settings for a user
  */
-async function setBudget(userId = null, budgetData) {
-  const query = userId ? { user: userId } : { user: null };
+async function setBudget(userId, budgetData) {
+  if (!userId) throw new Error("userId is required to set a budget");
+
+  const query = { user: userId };
   const update = {
     ...budgetData,
-    user: userId || null,
+    user: userId,
   };
 
   const budget = await Budget.findOneAndUpdate(query, update, {
@@ -64,17 +66,15 @@ async function setBudget(userId = null, budgetData) {
  * Computes real-time budget status:
  * - Weekly spent, limit, remaining, percentage, status
  * - Monthly spent, limit, remaining, percentage, status
- * - Category spending breakdown
+ * - Category spending breakdown (properly preserving 0 budget limits)
  */
-async function calculateBudgetStatus(userId = null, referenceDate = new Date()) {
+async function calculateBudgetStatus(userId, referenceDate = new Date()) {
   const budget = await getBudget(userId);
 
   const { startOfWeek, endOfWeek } = getWeekRange(referenceDate);
   const { startOfMonth, endOfMonth } = getMonthRange(referenceDate);
 
-  const userMatch = userId
-    ? { user: new mongoose.Types.ObjectId(userId) }
-    : { $or: [{ user: null }, { user: { $exists: false } }] };
+  const userMatch = userId ? { user: new mongoose.Types.ObjectId(userId) } : {};
 
   // Aggregate weekly spending
   const weeklyAggregation = await Expense.aggregate([
@@ -136,10 +136,10 @@ async function calculateBudgetStatus(userId = null, referenceDate = new Date()) 
   const monthlySpent = monthlyAggregation.length > 0 ? monthlyAggregation[0].totalSpent : 0;
   const monthlyExpenseCount = monthlyAggregation.length > 0 ? monthlyAggregation[0].expenseCount : 0;
 
-  const weeklyBudget = budget ? budget.weeklyBudget : null;
-  const monthlyBudget = budget ? budget.monthlyBudget : null;
+  const weeklyBudget = budget && typeof budget.weeklyBudget === "number" ? budget.weeklyBudget : null;
+  const monthlyBudget = budget && typeof budget.monthlyBudget === "number" ? budget.monthlyBudget : null;
   const currency = budget ? budget.currency : "INR";
-  const alertThreshold = budget ? budget.alertThreshold : 80;
+  const alertThreshold = budget && typeof budget.alertThreshold === "number" ? budget.alertThreshold : 80;
 
   // Build weekly analytics
   const weekly = {
@@ -147,12 +147,12 @@ async function calculateBudgetStatus(userId = null, referenceDate = new Date()) 
     spent: weeklySpent,
     remaining: weeklyBudget !== null ? weeklyBudget - weeklySpent : null,
     percentageUsed:
-      weeklyBudget && weeklyBudget > 0
+      weeklyBudget !== null && weeklyBudget > 0
         ? Number(((weeklySpent / weeklyBudget) * 100).toFixed(2))
         : 0,
     isExceeded: weeklyBudget !== null ? weeklySpent > weeklyBudget : false,
     isNearLimit:
-      weeklyBudget !== null
+      weeklyBudget !== null && weeklyBudget > 0
         ? weeklySpent <= weeklyBudget && (weeklySpent / weeklyBudget) * 100 >= alertThreshold
         : false,
     status:
@@ -176,12 +176,12 @@ async function calculateBudgetStatus(userId = null, referenceDate = new Date()) 
     spent: monthlySpent,
     remaining: monthlyBudget !== null ? monthlyBudget - monthlySpent : null,
     percentageUsed:
-      monthlyBudget && monthlyBudget > 0
+      monthlyBudget !== null && monthlyBudget > 0
         ? Number(((monthlySpent / monthlyBudget) * 100).toFixed(2))
         : 0,
     isExceeded: monthlyBudget !== null ? monthlySpent > monthlyBudget : false,
     isNearLimit:
-      monthlyBudget !== null
+      monthlyBudget !== null && monthlyBudget > 0
         ? monthlySpent <= monthlyBudget && (monthlySpent / monthlyBudget) * 100 >= alertThreshold
         : false,
     status:
@@ -199,17 +199,31 @@ async function calculateBudgetStatus(userId = null, referenceDate = new Date()) 
     },
   };
 
-  // Format category breakdown
-  const categoryBudgetsMap = budget && budget.categoryBudgets ? Object.fromEntries(budget.categoryBudgets) : {};
+  // Format category breakdown — explicitly preserve limit === 0
+  const categoryBudgetsMap =
+    budget && budget.categoryBudgets instanceof Map
+      ? Object.fromEntries(budget.categoryBudgets)
+      : budget && budget.categoryBudgets && typeof budget.categoryBudgets === "object"
+      ? budget.categoryBudgets
+      : {};
+
   const categoryBreakdown = categoryAggregation.map((cat) => {
-    const limit = categoryBudgetsMap[cat._id] || null;
+    const rawLimit = categoryBudgetsMap[cat._id];
+    const hasConfiguredLimit = rawLimit !== undefined && rawLimit !== null && typeof rawLimit === "number";
+    const limit = hasConfiguredLimit ? rawLimit : null;
+
     return {
       category: cat._id,
       spent: cat.spent,
       count: cat.count,
       limit,
       remaining: limit !== null ? limit - cat.spent : null,
-      percentageUsed: limit ? Number(((cat.spent / limit) * 100).toFixed(2)) : null,
+      percentageUsed:
+        limit !== null && limit > 0
+          ? Number(((cat.spent / limit) * 100).toFixed(2))
+          : limit === 0 && cat.spent > 0
+          ? 100
+          : null,
     };
   });
 

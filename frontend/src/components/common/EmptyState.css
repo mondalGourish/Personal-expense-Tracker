@@ -24,7 +24,7 @@
 }
 
 [data-theme="dark"] .empty-state-icon-wrapper {
-  background-color: rgba(124, 58, 237, 0.2);
+  background-color: rgba(16, 185, 129, 0.2);
   color: var(--primary-400);
 }
 

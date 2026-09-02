@@ -88,7 +88,7 @@
 .filter-select:focus {
   border-color: var(--primary);
   background-color: var(--bg-card);
-  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.12);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
 }
 
 .btn-reset-filters {

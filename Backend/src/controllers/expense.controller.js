@@ -70,9 +70,9 @@ const getExpenses = async (req, res, next) => {
     // Always scope to authenticated user
     const filter = { user: req.user._id };
 
-    // Category filter
+    // Category filter — exact match (validated against ALLOWED_CATEGORIES)
     if (category) {
-      filter.category = { $regex: category, $options: "i" };
+      filter.category = category;
     }
 
     // Amount range filter
@@ -184,7 +184,7 @@ const updateExpenseById = async (req, res, next) => {
     const expense = await Expense.findOneAndUpdate(
       { _id: id, user: req.user._id },
       updateFields,
-      { new: true, runValidators: true }
+      { returnDocument: "after", runValidators: true }
     );
 
     if (!expense) {

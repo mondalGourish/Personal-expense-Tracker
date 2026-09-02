@@ -43,7 +43,7 @@
 .period-tab.active {
   background-color: var(--primary);
   color: #ffffff;
-  box-shadow: 0 2px 6px rgba(124, 58, 237, 0.25);
+  box-shadow: 0 2px 6px rgba(16, 185, 129, 0.25);
 }
 
 /* 4 Metrics row */

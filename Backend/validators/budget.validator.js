@@ -64,7 +64,16 @@ const updateBudgetSchema = Joi.object({
   "object.min": "Please provide at least one budget field to update",
 });
 
+// Schema for budget status query (validating optional date)
+const queryBudgetStatusSchema = Joi.object({
+  date: Joi.date().iso().optional().messages({
+    "date.base": "Date must be a valid date",
+    "date.format": "Date must follow ISO format (YYYY-MM-DD)",
+  }),
+});
+
 module.exports = {
   setBudgetSchema,
   updateBudgetSchema,
+  queryBudgetStatusSchema,
 };
