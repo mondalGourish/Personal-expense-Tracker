@@ -82,8 +82,8 @@ async function runCommit2QCTests() {
       `Origin: ${allowOriginHeader}, Credentials: ${allowCredsHeader}`
     );
 
-    // 5. Test Auth & Cookie Handling
-    console.log("\n--- 5. Testing Auth Registration & Cookie Issuance ---");
+    // 5. Test Auth Registration, Email Verification & Login Cookie Issuance
+    console.log("\n--- 5. Testing Auth Registration, Email Verification & Login Cookie Issuance ---");
     const testEmail = `qc_test_commit2_${Date.now()}@example.com`;
     const regRes = await fetch(`${BASE_URL}/api/auth/register`, {
       method: "POST",
@@ -95,14 +95,33 @@ async function runCommit2QCTests() {
       }),
     });
     const regJson = await regRes.json();
-    const rawSetCookie = regRes.headers.get("set-cookie");
     record(
-      "User Registration & HTTP-only Cookie",
-      regRes.status === 201 && regJson.success === true && Boolean(rawSetCookie && rawSetCookie.includes("HttpOnly")),
-      `Status: ${regRes.status}, Cookie: ${rawSetCookie ? "HttpOnly present" : "MISSING"}`
+      "User Registration (Unverified State)",
+      regRes.status === 201 && regJson.success === true,
+      `Status: ${regRes.status}`
     );
 
-    testUser = regJson.data?.user;
+    // Verify email directly for QC session testing
+    await User.updateOne({ email: testEmail }, { isEmailVerified: true });
+
+    // Login to obtain authenticated session cookie
+    const loginRes = await fetch(`${BASE_URL}/api/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: testEmail,
+        password: "Password123!",
+      }),
+    });
+    const loginJson = await loginRes.json();
+    const rawSetCookie = loginRes.headers.get("set-cookie");
+    record(
+      "User Login & HTTP-only Cookie",
+      loginRes.status === 200 && loginJson.success === true && Boolean(rawSetCookie && rawSetCookie.includes("HttpOnly")),
+      `Status: ${loginRes.status}, Cookie: ${rawSetCookie ? "HttpOnly present" : "MISSING"}`
+    );
+
+    testUser = loginJson.data?.user;
     authTokenCookie = rawSetCookie ? rawSetCookie.split(";")[0] : "";
 
     // 6. Test /api/auth/me session check

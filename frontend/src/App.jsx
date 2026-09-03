@@ -9,6 +9,8 @@ import { LoadingFallback } from "./components/common/LoadingFallback";
 // Route-level code splitting
 const Login = lazy(() => import("./pages/Login").then((m) => ({ default: m.Login })));
 const Register = lazy(() => import("./pages/Register").then((m) => ({ default: m.Register })));
+const VerifyEmail = lazy(() => import("./pages/VerifyEmail").then((m) => ({ default: m.VerifyEmail })));
+const ForgotPassword = lazy(() => import("./pages/ForgotPassword").then((m) => ({ default: m.ForgotPassword })));
 const Dashboard = lazy(() => import("./pages/Dashboard").then((m) => ({ default: m.Dashboard })));
 const Expenses = lazy(() => import("./pages/Expenses").then((m) => ({ default: m.Expenses })));
 const AddExpense = lazy(() => import("./pages/AddExpense").then((m) => ({ default: m.AddExpense })));
@@ -24,6 +26,9 @@ function App() {
             {/* Public auth routes — no layout/sidebar */}
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/verify-email" element={<VerifyEmail />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ForgotPassword />} />
 
             {/* Protected app routes — require authentication */}
             <Route

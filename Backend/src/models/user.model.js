@@ -20,7 +20,40 @@ const userSchema = new mongoose.Schema(
     password: {
       type: String,
       required: [true, "Password is required"],
-      // Password is never returned by default in queries
+      select: false,
+    },
+    isEmailVerified: {
+      type: Boolean,
+      default: false,
+    },
+    otpHash: {
+      type: String,
+      select: false,
+    },
+    otpExpiresAt: {
+      type: Date,
+      select: false,
+    },
+    otpPurpose: {
+      type: String,
+      enum: ["EMAIL_VERIFICATION", "PASSWORD_RESET"],
+      select: false,
+    },
+    otpAttempts: {
+      type: Number,
+      default: 0,
+      select: false,
+    },
+    otpLastSentAt: {
+      type: Date,
+      select: false,
+    },
+    resetTokenHash: {
+      type: String,
+      select: false,
+    },
+    resetTokenExpiresAt: {
+      type: Date,
       select: false,
     },
   },

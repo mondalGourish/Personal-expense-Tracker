@@ -2,12 +2,30 @@ import { api } from "./api";
 
 /**
  * Register a new user account.
+ * Note: Registration initiates email verification.
  * @param {string} name
  * @param {string} email
  * @param {string} password
  */
 export async function register(name, email, password) {
   return api.post("/auth/register", { name, email, password });
+}
+
+/**
+ * Verify user email using 6-digit OTP code.
+ * @param {string} email
+ * @param {string} otp
+ */
+export async function verifyEmail(email, otp) {
+  return api.post("/auth/verify-email", { email, otp });
+}
+
+/**
+ * Resend verification OTP code (with 60s cooldown).
+ * @param {string} email
+ */
+export async function resendVerification(email) {
+  return api.post("/auth/resend-verification", { email });
 }
 
 /**
@@ -18,6 +36,33 @@ export async function register(name, email, password) {
  */
 export async function login(email, password) {
   return api.post("/auth/login", { email, password });
+}
+
+/**
+ * Request password reset code for an email (anti-enumeration protected).
+ * @param {string} email
+ */
+export async function forgotPassword(email) {
+  return api.post("/auth/forgot-password", { email });
+}
+
+/**
+ * Verify 6-digit password reset OTP and obtain short-lived resetToken.
+ * @param {string} email
+ * @param {string} otp
+ */
+export async function verifyResetOtp(email, otp) {
+  return api.post("/auth/verify-reset-otp", { email, otp });
+}
+
+/**
+ * Reset user password with verified resetToken and new strong password.
+ * @param {string} email
+ * @param {string} resetToken
+ * @param {string} newPassword
+ */
+export async function resetPassword(email, resetToken, newPassword) {
+  return api.post("/auth/reset-password", { email, resetToken, newPassword });
 }
 
 /**
@@ -39,11 +84,9 @@ export async function getMe() {
     const data = await api.get("/auth/me");
     return data?.data?.user || null;
   } catch (err) {
-    // 401 means no active session cookie exists — return null cleanly
     if (err.status === 401) {
       return null;
     }
-    // Network / 500 / CORS error: rethrow so session check distinguishes connection failure from logout
     throw err;
   }
 }

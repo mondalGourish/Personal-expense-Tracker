@@ -212,11 +212,26 @@ export const Reports = () => {
       showToast("No expenses to export yet.", "info");
       return;
     }
-    const headers = "Date,Category,Description,Amount\n";
+    const headers = "Date,Category,Description,Amount\r\n";
     const rows = expenses
-      .map((e) => `"${new Date(e.date).toISOString().split("T")[0]}","${e.category}","${(e.description || "").replace(/"/g, '""')}","${e.amount}"`)
-      .join("\n");
-    const blob = new Blob([headers + rows], { type: "text/csv" });
+      .map((e) => {
+        let dateStr = "";
+        try {
+          const d = new Date(e.date);
+          dateStr = !isNaN(d.getTime()) ? d.toISOString().split("T")[0] : String(e.date || "");
+        } catch {
+          dateStr = String(e.date || "");
+        }
+        const category = (e.category || "").replace(/"/g, '""');
+        const desc = (e.description || "").replace(/"/g, '""');
+        const amount = Number(e.amount || 0).toFixed(2);
+        return `"${dateStr}","${category}","${desc}",${amount}`;
+      })
+      .join("\r\n");
+
+    // Add UTF-8 BOM (\uFEFF) so Excel properly parses columns, encoding, and dates
+    const csvContent = "\uFEFF" + headers + rows;
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;

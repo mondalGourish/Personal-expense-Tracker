@@ -56,8 +56,7 @@ export const AuthProvider = ({ children }) => {
 
   const register = useCallback(async (name, email, password) => {
     const data = await authService.register(name, email, password);
-    localStorage.setItem("has_session", "true");
-    setUser(data.data.user);
+    // Note: Do not establish session until email is verified
     setAuthError(null);
     return data;
   }, []);

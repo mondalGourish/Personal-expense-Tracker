@@ -12,6 +12,7 @@ import {
   BarChart3,
   AlertCircle,
   LogIn,
+  ArrowRight,
 } from "lucide-react";
 import "./Auth.css";
 
@@ -23,21 +24,29 @@ export const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [unverifiedEmail, setUnverifiedEmail] = useState("");
 
   const handleChange = (e) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-    if (error) setError(""); // Clear error on input change
+    if (error) setError("");
+    if (unverifiedEmail) setUnverifiedEmail("");
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setUnverifiedEmail("");
     setLoading(true);
     try {
       await login(form.email, form.password);
       navigate("/", { replace: true });
     } catch (err) {
-      setError(err.message || "Login failed. Please try again.");
+      if (err.isUnverified || err.response?.data?.isUnverified) {
+        setUnverifiedEmail(err.email || form.email);
+        setError("Please verify your email before logging in.");
+      } else {
+        setError(err.message || "Login failed. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
@@ -98,7 +107,25 @@ export const Login = () => {
           {error && (
             <div className="auth-alert-error" role="alert">
               <AlertCircle size={16} className="auth-alert-icon" />
-              <span>{error}</span>
+              <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                <span>{error}</span>
+                {unverifiedEmail && (
+                  <Link
+                    to={`/verify-email?email=${encodeURIComponent(unverifiedEmail)}`}
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 4,
+                      fontSize: "0.8125rem",
+                      fontWeight: 700,
+                      color: "var(--primary)",
+                      marginTop: 2,
+                    }}
+                  >
+                    Enter 6-digit verification code <ArrowRight size={13} />
+                  </Link>
+                )}
+              </div>
             </div>
           )}
 
@@ -126,9 +153,14 @@ export const Login = () => {
 
             {/* Password */}
             <div className="auth-field">
-              <label className="auth-label" htmlFor="login-password">
-                Password
-              </label>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <label className="auth-label" htmlFor="login-password">
+                  Password
+                </label>
+                <Link to="/forgot-password" className="auth-forgot-link">
+                  Forgot password?
+                </Link>
+              </div>
               <div className="auth-input-wrapper">
                 <input
                   id="login-password"

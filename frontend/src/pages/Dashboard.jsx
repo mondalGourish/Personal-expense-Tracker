@@ -21,7 +21,6 @@ import "./Dashboard.css";
 export const Dashboard = () => {
   const {
     expenses,
-    expensesLoading,
     expensesError,
     settings,
     budget,

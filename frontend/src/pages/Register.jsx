@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { PasswordRequirements } from "../components/auth/PasswordRequirements";
+import { checkPasswordRequirements } from "../utils/passwordPolicy";
 import {
   Wallet,
   User,
@@ -46,8 +48,9 @@ export const Register = () => {
     if (!/^\S+@\S+\.\S+$/.test(form.email)) {
       errors.email = "Please enter a valid email address";
     }
-    if (form.password.length < 8) {
-      errors.password = "Password must be at least 8 characters";
+    const reqs = checkPasswordRequirements(form.password);
+    if (!reqs.isValid) {
+      errors.password = "Password does not meet all security requirements";
     }
     if (form.password !== form.confirmPassword) {
       errors.confirmPassword = "Passwords do not match";
@@ -66,7 +69,8 @@ export const Register = () => {
     setLoading(true);
     try {
       await register(form.name.trim(), form.email.trim(), form.password);
-      navigate("/", { replace: true });
+      // Navigate to email verification screen with email pre-filled
+      navigate(`/verify-email?email=${encodeURIComponent(form.email.trim())}`);
     } catch (err) {
       setError(err.message || "Registration failed. Please try again.");
     } finally {
@@ -198,7 +202,7 @@ export const Register = () => {
                   name="password"
                   value={form.password}
                   onChange={handleChange}
-                  placeholder="At least 8 characters"
+                  placeholder="Create a strong password"
                   required
                   autoComplete="new-password"
                 />
@@ -212,8 +216,12 @@ export const Register = () => {
                   {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
+
+              {/* Live Password Requirements Checklist */}
+              {form.password && <PasswordRequirements password={form.password} />}
+
               {fieldErrors.password && (
-                <span className="auth-error-text">
+                <span className="auth-error-text" style={{ marginTop: 6 }}>
                   <AlertCircle size={13} />
                   {fieldErrors.password}
                 </span>

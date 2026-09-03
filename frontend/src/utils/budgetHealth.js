@@ -6,7 +6,7 @@
 import { formatCurrency } from "../data/mockExpenses.js";
 
 /**
- * Calculates unified budget health metrics.
+ * Calculates unified budget health metrics using raw mathematical percentages for decisions.
  * 
  * @param {Object} params
  * @param {number|null|undefined} params.budgetLimit - Configured spending limit
@@ -58,7 +58,7 @@ export function calculateBudgetHealth({
         visualPercent: 100,
         status: "EXCEEDED",
         statusMessage: `${formatCurrency(numericSpent, currencySymbol)} over budget`,
-        alertLabel: "Budget exceeded",
+        alertLabel: "Budget limit exceeded",
         isExceeded: true,
         isWarning: false,
         isSafe: false,
@@ -86,11 +86,11 @@ export function calculateBudgetHealth({
   // 3. Standard Positive Budget Limit (limit > 0)
   const remaining = numericLimit - numericSpent;
   const rawPercentage = (numericSpent / numericLimit) * 100;
-  const percentageUsed = Math.round(rawPercentage);
+  const percentageUsed = Math.round(rawPercentage); // Used ONLY for display
   const visualPercent = Math.min(100, Math.max(0, rawPercentage));
 
-  // EXCEEDED: percentageUsed >= 100 or spent > budget
-  if (numericSpent > numericLimit || percentageUsed >= 100) {
+  // EXCEEDED (>100%): numericSpent > numericLimit
+  if (numericSpent > numericLimit) {
     const overAmount = numericSpent - numericLimit;
     return {
       isConfigured: true,
@@ -109,8 +109,27 @@ export function calculateBudgetHealth({
     };
   }
 
-  // WARNING: percentageUsed >= alertThreshold && percentageUsed < 100
-  if (percentageUsed >= threshold) {
+  // EXACT LIMIT REACHED (exactly 100%): numericSpent === numericLimit
+  if (numericSpent === numericLimit) {
+    return {
+      isConfigured: true,
+      budgetLimit: numericLimit,
+      spent: numericSpent,
+      remaining: 0,
+      overAmount: 0,
+      percentageUsed: 100,
+      visualPercent: 100,
+      status: "EXCEEDED",
+      statusMessage: "Budget limit reached",
+      alertLabel: "Budget limit reached",
+      isExceeded: true,
+      isWarning: false,
+      isSafe: false,
+    };
+  }
+
+  // WARNING: rawPercentage >= threshold && rawPercentage < 100
+  if (rawPercentage >= threshold) {
     return {
       isConfigured: true,
       budgetLimit: numericLimit,
@@ -128,7 +147,7 @@ export function calculateBudgetHealth({
     };
   }
 
-  // SAFE: percentageUsed < alertThreshold
+  // SAFE: rawPercentage < threshold
   return {
     isConfigured: true,
     budgetLimit: numericLimit,

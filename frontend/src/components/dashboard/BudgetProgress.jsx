@@ -11,11 +11,10 @@ export const BudgetProgress = () => {
   const { expenses, budget, budgetLoading, settings } = useExpenses();
 
   // Calculate monthly spending strictly from expenses within the current month
-  const { monthlyHealth, weeklyHealth, progressList } = useMemo(() => {
+  const { monthlyHealth, progressList } = useMemo(() => {
     if (!budget) {
       return {
         monthlyHealth: calculateBudgetHealth({ budgetLimit: null }),
-        weeklyHealth: calculateBudgetHealth({ budgetLimit: null }),
         progressList: [],
       };
     }
@@ -26,14 +25,7 @@ export const BudgetProgress = () => {
     // Current month start
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
-    // Current week start (Monday)
-    const day = now.getDay();
-    const diffToMonday = (day === 0 ? -6 : 1) - day;
-    const startOfWeek = new Date(now);
-    startOfWeek.setDate(now.getDate() + diffToMonday);
-
     let monthlySpent = 0;
-    let weeklySpent = 0;
     const categoryTotals = {};
 
     expenses.forEach((exp) => {
@@ -45,23 +37,12 @@ export const BudgetProgress = () => {
         const cat = exp.category || "Other";
         categoryTotals[cat] = (categoryTotals[cat] || 0) + amt;
       }
-
-      if (d >= startOfWeek) {
-        weeklySpent += amt;
-      }
     });
 
     const threshold = budget.alertThreshold || 80;
     const mHealth = calculateBudgetHealth({
       budgetLimit: budget.monthlyBudget,
       spent: monthlySpent,
-      alertThreshold: threshold,
-      currencySymbol: settings.currencySymbol,
-    });
-
-    const wHealth = calculateBudgetHealth({
-      budgetLimit: budget.weeklyBudget,
-      spent: weeklySpent,
       alertThreshold: threshold,
       currencySymbol: settings.currencySymbol,
     });
@@ -97,7 +78,6 @@ export const BudgetProgress = () => {
 
     return {
       monthlyHealth: mHealth,
-      weeklyHealth: wHealth,
       progressList: list,
     };
   }, [expenses, budget, settings.currencySymbol]);
