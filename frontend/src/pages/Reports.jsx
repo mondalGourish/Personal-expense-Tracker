@@ -20,6 +20,7 @@ import {
   TrendingDown,
   PieChart as PieIcon,
   BarChart2,
+  BarChart3,
   AlertTriangle,
   AlertCircle,
   CheckCircle2,
