@@ -1,10 +1,10 @@
 import React, { useState, useMemo } from "react";
-import { Link } from "react-router-dom";
 import { useExpenses } from "../context/ExpenseContext";
 import { formatCurrency, getCategoryMeta } from "../data/mockExpenses";
 import { CategoryIcon } from "../components/common/CategoryIcon";
 import { EmptyState } from "../components/common/EmptyState";
 import { Button } from "../components/common/Button";
+import { calculateBudgetHealth } from "../utils/budgetHealth";
 import {
   BarChart,
   Bar,
@@ -20,17 +20,15 @@ import {
   TrendingDown,
   PieChart as PieIcon,
   BarChart2,
-  PlusCircle,
-  BarChart3,
+  AlertTriangle,
+  AlertCircle,
+  CheckCircle2,
 } from "lucide-react";
 import "./Reports.css";
 
 export const Reports = () => {
-  const { expenses, settings, showToast, setIsAddModalOpen } = useExpenses();
+  const { expenses, settings, showToast, setIsAddModalOpen, budget } = useExpenses();
   const [selectedPeriod, setSelectedPeriod] = useState("This Month");
-
-  // Date boundary helpers
-  const today = useMemo(() => new Date(), []);
 
   // Filter expenses strictly belonging to the selected period
   const { currentPeriodExpenses, previousPeriodExpenses, periodLabel } = useMemo(() => {
@@ -117,6 +115,26 @@ export const Reports = () => {
       isIncrease,
     };
   }, [currentPeriodExpenses, previousPeriodExpenses, selectedPeriod]);
+
+  // Compute budget health for the selected period
+  const periodBudgetHealth = useMemo(() => {
+    if (!budget) return null;
+    const limit =
+      selectedPeriod === "This Week"
+        ? budget.weeklyBudget
+        : selectedPeriod === "This Month"
+        ? budget.monthlyBudget
+        : null;
+
+    if (limit === null || limit === undefined) return null;
+
+    return calculateBudgetHealth({
+      budgetLimit: limit,
+      spent: metrics.total,
+      alertThreshold: budget.alertThreshold || 80,
+      currencySymbol: settings.currencySymbol,
+    });
+  }, [budget, selectedPeriod, metrics.total, settings.currencySymbol]);
 
   // Real Category breakdown for current period (or all expenses if period has 0)
   const categoryStats = useMemo(() => {
@@ -295,6 +313,25 @@ export const Reports = () => {
               </span>
             )}
           </div>
+          {periodBudgetHealth && periodBudgetHealth.isConfigured && (
+            <div className="metric-budget-health-row" style={{ marginTop: 6, fontSize: "0.75rem", display: "flex", alignItems: "center", gap: 4 }}>
+              {periodBudgetHealth.isExceeded && <AlertCircle size={12} style={{ color: "var(--danger)" }} />}
+              {periodBudgetHealth.isWarning && <AlertTriangle size={12} style={{ color: "var(--warning)" }} />}
+              {periodBudgetHealth.isSafe && <CheckCircle2 size={12} style={{ color: "var(--success)" }} />}
+              <span
+                style={{
+                  fontWeight: 600,
+                  color: periodBudgetHealth.isExceeded
+                    ? "var(--danger)"
+                    : periodBudgetHealth.isWarning
+                    ? "var(--warning)"
+                    : "var(--success)",
+                }}
+              >
+                {periodBudgetHealth.percentageUsed}% of limit ({periodBudgetHealth.statusMessage})
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Metric 2: Period Average */}

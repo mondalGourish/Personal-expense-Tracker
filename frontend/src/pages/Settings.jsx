@@ -45,7 +45,6 @@ export const Settings = () => {
     }
   }, [budget]);
 
-  const [selectedCurrency, setSelectedCurrency] = useState(settings.currency);
   const [budgetSaving, setBudgetSaving] = useState(false);
 
   const currencies = [
@@ -55,16 +54,28 @@ export const Settings = () => {
     { code: "GBP", symbol: "£", name: "British Pound (GBP)" },
   ];
 
+  const isWeeklyExceedingMonthly =
+    Number(budgetForm.weeklyBudget) > Number(budgetForm.monthlyBudget);
+
   const handleBudgetSave = async (e) => {
     e.preventDefault();
+
+    const weekly = Number(budgetForm.weeklyBudget);
+    const monthly = Number(budgetForm.monthlyBudget);
+
+    if (weekly > monthly) {
+      showToast("Weekly spending limit cannot be greater than monthly spending limit", "error");
+      return;
+    }
+
     setBudgetSaving(true);
     try {
       await updateBudget({
-        weeklyBudget: Number(budgetForm.weeklyBudget),
-        monthlyBudget: Number(budgetForm.monthlyBudget),
+        weeklyBudget: weekly,
+        monthlyBudget: monthly,
         alertThreshold: Number(budgetForm.alertThreshold),
       });
-    } catch (err) {
+    } catch {
       showToast("Failed to save budget. Please try again.", "error");
     } finally {
       setBudgetSaving(false);
@@ -72,7 +83,6 @@ export const Settings = () => {
   };
 
   const handleCurrencyChange = (curr) => {
-    setSelectedCurrency(curr.code);
     setSettings((prev) => ({
       ...prev,
       currency: curr.code,
@@ -151,7 +161,7 @@ export const Settings = () => {
                 <input
                   id="weekly-limit"
                   type="number"
-                  className="form-input"
+                  className={`form-input ${isWeeklyExceedingMonthly ? "input-error" : ""}`}
                   value={budgetForm.weeklyBudget}
                   onChange={(e) =>
                     setBudgetForm((prev) => ({
@@ -162,6 +172,11 @@ export const Settings = () => {
                   min="0"
                   required
                 />
+                {isWeeklyExceedingMonthly && (
+                  <span className="form-error-msg">
+                    Weekly limit cannot exceed monthly limit ({settings.currencySymbol}{budgetForm.monthlyBudget})
+                  </span>
+                )}
               </div>
 
               <div className="form-group">

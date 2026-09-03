@@ -4,6 +4,21 @@ import * as budgetService from "../services/budget.service";
 
 const ExpenseContext = createContext();
 
+const currencySymbolMap = {
+  INR: "₹",
+  USD: "$",
+  EUR: "€",
+  GBP: "£",
+};
+
+const getInitialTheme = () => {
+  try {
+    return localStorage.getItem("expense_track_theme") || "light";
+  } catch (e) {
+    return "light";
+  }
+};
+
 export const ExpenseProvider = ({ children }) => {
   // Expenses — populated from real API
   const [expenses, setExpenses] = useState([]);
@@ -15,16 +30,24 @@ export const ExpenseProvider = ({ children }) => {
   const [budgetLoading, setBudgetLoading] = useState(true);
   const [budgetError, setBudgetError] = useState(null);
 
-  // UI settings (client-side only — currency, theme, notifications)
-  const [settings, setSettings] = useState({
-    currency: "INR",
-    currencySymbol: "₹",
-    theme: "light",
-    notifications: {
-      budgetAlerts: true,
-      weeklySummary: true,
-    },
+  // UI settings — theme persisted in localStorage, currency synced from user's budget
+  const [settings, setSettings] = useState(() => {
+    const theme = getInitialTheme();
+    return {
+      currency: "INR",
+      currencySymbol: "₹",
+      theme,
+      notifications: {
+        budgetAlerts: true,
+        weeklySummary: true,
+      },
+    };
   });
+
+  // Apply theme to document on mount
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", settings.theme);
+  }, [settings.theme]);
 
   // Toast notification state
   const [toast, setToast] = useState(null);
@@ -60,17 +83,24 @@ export const ExpenseProvider = ({ children }) => {
       setBudgetError(null);
       const response = await budgetService.getBudget();
       if (response && response.data) {
+        const curr = response.data.currency || "INR";
         setBudgetState({
           weeklyBudget: response.data.weeklyBudget,
           monthlyBudget: response.data.monthlyBudget,
           alertThreshold: response.data.alertThreshold || 80,
-          currency: response.data.currency || "INR",
+          currency: curr,
           categoryBudgets: response.data.categoryBudgets
             ? response.data.categoryBudgets instanceof Map
               ? Object.fromEntries(response.data.categoryBudgets)
               : response.data.categoryBudgets
             : {},
         });
+        // Keep UI currency in sync with single source of truth from budget
+        setSettings((prev) => ({
+          ...prev,
+          currency: curr,
+          currencySymbol: currencySymbolMap[curr] || "₹",
+        }));
       } else {
         // Honest null state: user has not configured a budget yet
         setBudgetState(null);
@@ -103,12 +133,18 @@ export const ExpenseProvider = ({ children }) => {
     setSettings((prev) => {
       const nextTheme = prev.theme === "light" ? "dark" : "light";
       document.documentElement.setAttribute("data-theme", nextTheme);
+      try {
+        localStorage.setItem("expense_track_theme", nextTheme);
+      } catch (e) {}
       return { ...prev, theme: nextTheme };
     });
   };
 
   const setTheme = (theme) => {
     document.documentElement.setAttribute("data-theme", theme);
+    try {
+      localStorage.setItem("expense_track_theme", theme);
+    } catch (e) {}
     setSettings((prev) => ({ ...prev, theme }));
   };
 
@@ -151,11 +187,12 @@ export const ExpenseProvider = ({ children }) => {
   // ── Budget (real API) ─────────────────────────────────────────────────────
 
   const updateBudget = async (updatedBudget) => {
+    const targetCurrency = updatedBudget.currency || settings.currency;
     const payload = {
       weeklyBudget: Number(updatedBudget.weeklyBudget),
       monthlyBudget: Number(updatedBudget.monthlyBudget),
       alertThreshold: Number(updatedBudget.alertThreshold || 80),
-      currency: settings.currency,
+      currency: targetCurrency,
       categoryBudgets: updatedBudget.categoryBudgets || {},
     };
     const response = await budgetService.setBudget(payload);
@@ -171,6 +208,11 @@ export const ExpenseProvider = ({ children }) => {
           : saved.categoryBudgets
         : {},
     });
+    setSettings((prev) => ({
+      ...prev,
+      currency: saved.currency || "INR",
+      currencySymbol: currencySymbolMap[saved.currency] || "₹",
+    }));
     showToast("Budget limits updated successfully!");
     return saved;
   };

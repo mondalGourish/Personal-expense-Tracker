@@ -39,6 +39,15 @@ const setBudgetSchema = Joi.object({
     .messages({
       "object.pattern.match": `Category budget keys must be valid categories: ${ALLOWED_CATEGORIES.join(", ")}`,
     }),
+}).custom((value, helpers) => {
+  if (
+    typeof value.weeklyBudget === "number" &&
+    typeof value.monthlyBudget === "number" &&
+    value.weeklyBudget > value.monthlyBudget
+  ) {
+    return helpers.message("Weekly budget cannot be greater than monthly budget");
+  }
+  return value;
 });
 
 const updateBudgetSchema = Joi.object({
@@ -60,7 +69,16 @@ const updateBudgetSchema = Joi.object({
       Joi.number().min(0)
     )
     .optional(),
-}).min(1).messages({
+}).min(1).custom((value, helpers) => {
+  if (
+    typeof value.weeklyBudget === "number" &&
+    typeof value.monthlyBudget === "number" &&
+    value.weeklyBudget > value.monthlyBudget
+  ) {
+    return helpers.message("Weekly budget cannot be greater than monthly budget");
+  }
+  return value;
+}).messages({
   "object.min": "Please provide at least one budget field to update",
 });
 

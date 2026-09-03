@@ -8,19 +8,35 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true); // True during initial session check
   const [authError, setAuthError] = useState(null); // Set when backend is unreachable or 500 error occurs
 
-  // On mount: restore session from HTTP-only cookie
+  // On mount: restore session if a previous session flag was set
   const restoreSession = useCallback(async () => {
+    if (!localStorage.getItem("has_session")) {
+      setUser(null);
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     setAuthError(null);
     try {
       const currentUser = await authService.getMe();
-      setUser(currentUser); // null if 401 unauthenticated
+      if (currentUser) {
+        setUser(currentUser);
+      } else {
+        localStorage.removeItem("has_session");
+        setUser(null);
+      }
       setAuthError(null);
     } catch (err) {
-      // Network or 500 server error — preserve error state so user knows server is down
-      console.error("Session restoration failed due to connection error:", err.message);
-      setAuthError(err.message || "Failed to reach server");
-      setUser(null);
+      if (err.status === 401) {
+        localStorage.removeItem("has_session");
+        setUser(null);
+      } else {
+        // Network or 500 server error — preserve error state so user knows server is down
+        console.error("Session restoration failed due to connection error:", err.message);
+        setAuthError(err.message || "Failed to reach server");
+        setUser(null);
+      }
     } finally {
       setLoading(false);
     }
@@ -32,6 +48,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = useCallback(async (email, password) => {
     const data = await authService.login(email, password);
+    localStorage.setItem("has_session", "true");
     setUser(data.data.user);
     setAuthError(null);
     return data;
@@ -39,6 +56,7 @@ export const AuthProvider = ({ children }) => {
 
   const register = useCallback(async (name, email, password) => {
     const data = await authService.register(name, email, password);
+    localStorage.setItem("has_session", "true");
     setUser(data.data.user);
     setAuthError(null);
     return data;
@@ -50,6 +68,7 @@ export const AuthProvider = ({ children }) => {
     } catch (err) {
       console.warn("Logout request failed, clearing local state:", err.message);
     } finally {
+      localStorage.removeItem("has_session");
       setUser(null);
       setAuthError(null);
     }

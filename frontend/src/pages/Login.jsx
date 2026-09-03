@@ -50,7 +50,7 @@ export const Login = () => {
   ];
 
   return (
-    <div className="auth-page animate-fade-in">
+    <main className="auth-page animate-fade-in">
       {/* Left decorative panel */}
       <div className="auth-panel-left">
         <div className="auth-brand">
@@ -76,7 +76,7 @@ export const Login = () => {
               <div className="auth-feature-icon">
                 <Icon size={16} />
               </div>
-              <span>{label}</span>
+              <span className="auth-feature-label">{label}</span>
             </div>
           ))}
         </div>
@@ -84,19 +84,21 @@ export const Login = () => {
 
       {/* Right form panel */}
       <div className="auth-panel-right">
-        <div className="auth-form-container">
-          <div className="auth-form-header">
-            <h1 className="auth-form-title">Welcome back</h1>
-            <p className="auth-form-subtitle">
+        <div className="auth-card">
+          <div className="auth-header">
+            <h1 className="auth-title">Welcome back</h1>
+            <p className="auth-subtitle">
               Don't have an account?{" "}
-              <Link to="/register">Create one for free</Link>
+              <Link to="/register" className="auth-link">
+                Sign up free
+              </Link>
             </p>
           </div>
 
           {error && (
-            <div className="auth-alert error" style={{ marginBottom: 20 }}>
-              <AlertCircle size={16} />
-              {error}
+            <div className="auth-alert-error" role="alert">
+              <AlertCircle size={16} className="auth-alert-icon" />
+              <span>{error}</span>
             </div>
           )}
 
@@ -168,6 +170,6 @@ export const Login = () => {
           </form>
         </div>
       </div>
-    </div>
+    </main>
   );
 };

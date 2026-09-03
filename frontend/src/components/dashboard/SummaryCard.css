@@ -16,6 +16,10 @@
   border-color: #cbd5e1;
 }
 
+[data-theme="dark"] .summary-card:hover {
+  border-color: #334155;
+}
+
 .summary-icon-container {
   width: 48px;
   height: 48px;
@@ -50,6 +54,7 @@
   align-items: center;
   gap: 6px;
   font-size: 0.75rem;
+  flex-wrap: wrap;
 }
 
 .trend-badge {
@@ -66,9 +71,19 @@
   background-color: var(--success-bg);
 }
 
+.trend-warning {
+  color: var(--warning);
+  background-color: var(--warning-bg);
+}
+
 .trend-down {
   color: var(--danger);
   background-color: var(--danger-bg);
+}
+
+.trend-neutral {
+  color: var(--text-secondary);
+  background-color: var(--bg-card-subtle);
 }
 
 .trend-period {

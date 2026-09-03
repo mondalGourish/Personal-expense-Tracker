@@ -4,7 +4,6 @@ import {
   Bell,
   ChevronDown,
   Menu,
-  Check,
   User,
   LogOut,
 } from "lucide-react";
@@ -16,8 +15,6 @@ export const Header = ({ onToggleSidebar }) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
-  const [selectedRange, setSelectedRange] = useState("This Week");
-  const [showRangeDropdown, setShowRangeDropdown] = useState(false);
 
   // Time-aware greeting
   const getGreeting = () => {
@@ -26,6 +23,13 @@ export const Header = ({ onToggleSidebar }) => {
     if (hour < 17) return "Good afternoon";
     return "Good evening";
   };
+
+  // Formatted current date for display
+  const currentDateFormatted = new Date().toLocaleDateString("en-US", {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+  });
 
   // Display name from real authenticated user
   const displayName = user?.name || "there";
@@ -58,47 +62,19 @@ export const Header = ({ onToggleSidebar }) => {
       </div>
 
       <div className="header-right">
-        {/* Date Range Selector Dropdown */}
-        <div className="dropdown-container">
-          <button
-            className="date-range-btn"
-            onClick={() => setShowRangeDropdown(!showRangeDropdown)}
-          >
-            <Calendar size={16} className="date-icon" />
-            <span className="date-text">{selectedRange}</span>
-            <ChevronDown size={14} className="chevron-icon" />
-          </button>
-
-          {showRangeDropdown && (
-            <div className="dropdown-menu range-menu animate-fade-in">
-              {["Today", "This Week", "This Month", "Last Month", "This Year"].map(
-                (range) => (
-                  <button
-                    key={range}
-                    className={`dropdown-item ${selectedRange === range ? "active" : ""}`}
-                    onClick={() => {
-                      setSelectedRange(range);
-                      setShowRangeDropdown(false);
-                    }}
-                  >
-                    <span>{range}</span>
-                    {selectedRange === range && <Check size={14} />}
-                  </button>
-                )
-              )}
-            </div>
-          )}
+        {/* Today's Date Badge — clean, authentic indicator */}
+        <div className="header-date-badge" title="Today's Date">
+          <Calendar size={15} className="date-icon" />
+          <span className="date-text">{currentDateFormatted}</span>
         </div>
 
-        {/* Notifications Bell - visual only */}
-        <div className="dropdown-container">
-          <button
-            className="icon-action-btn"
-            aria-label="Notifications"
-            title="Notifications coming soon"
-          >
-            <Bell size={18} />
-          </button>
+        {/* Notifications Bell - visual status indicator */}
+        <div
+          className="header-notif-indicator"
+          title="Notifications (No unread alerts)"
+          aria-label="No unread notifications"
+        >
+          <Bell size={18} />
         </div>
 
         {/* User Profile */}
@@ -106,6 +82,8 @@ export const Header = ({ onToggleSidebar }) => {
           <button
             className="user-profile-btn"
             onClick={() => setShowProfileMenu(!showProfileMenu)}
+            aria-expanded={showProfileMenu}
+            aria-label="User account menu"
           >
             <div className="user-avatar">
               <span>{displayName.charAt(0).toUpperCase()}</span>
@@ -122,7 +100,7 @@ export const Header = ({ onToggleSidebar }) => {
                 <div className="user-avatar lg">
                   <span>{displayName.charAt(0).toUpperCase()}</span>
                 </div>
-                <div>
+                <div className="profile-text-group">
                   <div className="profile-name">{user?.name}</div>
                   <div className="profile-email">{user?.email}</div>
                 </div>

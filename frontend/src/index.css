@@ -13,23 +13,30 @@
   --primary-700: #047857;
   --primary-800: #065f46;
   --primary-900: #064e3b;
+  
   --primary: #10b981;
   --primary-hover: #059669;
+  --primary-light: #d1fae5;
   --primary-gradient: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  --primary-glow: 0 4px 20px rgba(16, 185, 129, 0.35);
+  --primary-glow: 0 4px 14px rgba(16, 185, 129, 0.25);
 
   /* Sidebar Midnight Navy */
+  --sidebar: #0b1220;
   --sidebar-bg: #0b1220;
   --sidebar-border: #151f32;
   --sidebar-text: #94a3b8;
-  --sidebar-text-active: #ffffff;
+  --sidebar-text-active: #10b981;
   --sidebar-item-hover: rgba(255, 255, 255, 0.06);
 
   /* Light Theme Colors */
+  --background: #f8fafc;
   --bg-app: #f8fafc;
+  --card: #ffffff;
   --bg-card: #ffffff;
+  --card-subtle: #f8fafc;
   --bg-card-subtle: #f8fafc;
   --bg-input: #ffffff;
+  --border: #e2e8f0;
   --border-color: #e2e8f0;
   --border-subtle: #f1f5f9;
 
@@ -39,7 +46,7 @@
   --text-muted: #94a3b8;
   --text-inverse: #ffffff;
 
-  /* Status Colors */
+  /* Semantic Status Colors */
   --success: #10b981;
   --success-bg: #ecfdf5;
   --success-border: #a7f3d0;
@@ -53,7 +60,7 @@
   --info-bg: #f0f9ff;
   --info-border: #bae6fd;
 
-  /* Category Specific Colors (Visually Distinct) */
+  /* Category Specific Colors (Visually Distinct For Expense Tracking) */
   --cat-food: #10b981;
   --cat-food-bg: #d1fae5;
   --cat-transport: #0ea5e9;
@@ -92,18 +99,25 @@
 
 /* Dark Theme Support — Midnight Emerald */
 [data-theme="dark"] {
-  --bg-app: #080d1a;
-  --bg-card: #0f172a;
+  --background: #090d16;
+  --bg-app: #090d16;
+  --card: #111827;
+  --bg-card: #111827;
+  --card-subtle: #1e293b;
   --bg-card-subtle: #1e293b;
   --bg-input: #1e293b;
+  --border: #1e293b;
   --border-color: #1e293b;
   --border-subtle: #0f172a;
   --text-primary: #f8fafc;
-  --text-secondary: #cbd5e1;
+  --text-secondary: #94a3b8;
   --text-muted: #64748b;
-  --shadow-card: 0 4px 12px rgba(0, 0, 0, 0.4);
-  --sidebar-bg: #060a14;
+  --shadow-card: 0 4px 14px rgba(0, 0, 0, 0.45);
+  --sidebar: #070b14;
+  --sidebar-bg: #070b14;
   --sidebar-border: #111a2e;
+  --primary-50: rgba(16, 185, 129, 0.12);
+  --primary-100: rgba(16, 185, 129, 0.2);
 }
 
 /* Global Reset & Base Styles */
@@ -148,17 +162,25 @@ button {
   cursor: pointer;
   border: none;
   background: none;
-  outline: none;
 }
 
 input, select, textarea {
   font-family: inherit;
-  outline: none;
+}
+
+input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-visible {
+  outline: 2px solid var(--primary, #10b981);
+  outline-offset: 2px;
 }
 
 a {
   text-decoration: none;
   color: inherit;
+}
+
+a:focus-visible {
+  outline: 2px solid var(--primary, #10b981);
+  outline-offset: 2px;
 }
 
 /* Keyframes for subtle entrance */

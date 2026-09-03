@@ -18,6 +18,12 @@ const errorHandler = (err, req, res, next) => {
   // Mongoose Duplicate Key Error → 409 Conflict
   if (err.code === 11000) {
     const field = Object.keys(err.keyValue || {})[0] || "field";
+    if (field === "user") {
+      return res.status(409).json({
+        success: false,
+        error: "A budget configuration already exists for this user",
+      });
+    }
     return res.status(409).json({
       success: false,
       error: `An account with this ${field} already exists`,

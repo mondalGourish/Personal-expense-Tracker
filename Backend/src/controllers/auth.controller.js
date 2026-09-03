@@ -2,6 +2,15 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const User = require("../models/user.model");
 
+const getCookieOptions = () => {
+  const isProduction = process.env.NODE_ENV === "production";
+  return {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: isProduction && process.env.CROSS_SITE_COOKIE === "true" ? "none" : "lax",
+  };
+};
+
 /**
  * Generate JWT and set it as an HTTP-only cookie on the response.
  */
@@ -11,9 +20,7 @@ const issueTokenCookie = (res, userId) => {
   });
 
   res.cookie("token", token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
+    ...getCookieOptions(),
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in ms
   });
 };
@@ -117,9 +124,8 @@ const login = async (req, res, next) => {
  */
 const logout = (req, res) => {
   res.cookie("token", "", {
-    httpOnly: true,
+    ...getCookieOptions(),
     expires: new Date(0),
-    sameSite: "lax",
   });
 
   res.status(200).json({

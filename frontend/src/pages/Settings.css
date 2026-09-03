@@ -55,18 +55,25 @@
 .profile-meta-text {
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 .profile-name-bold {
   font-size: 1.1rem;
   font-weight: 800;
   color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .profile-email-sub {
   font-size: 0.8125rem;
   color: var(--text-muted);
   margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .settings-form-grid {
@@ -146,6 +153,7 @@
 .currency-text-info {
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 .currency-code {
@@ -162,6 +170,7 @@
 .check-icon-selected {
   margin-left: auto;
   color: var(--primary);
+  flex-shrink: 0;
 }
 
 /* Theme selector row */
@@ -229,6 +238,7 @@
   justify-content: space-between;
   padding: 12px 0;
   border-bottom: 1px solid var(--border-subtle);
+  gap: 12px;
 }
 
 .notif-toggle-row:last-child {
@@ -252,5 +262,17 @@
   .currency-selector-grid,
   .theme-options-row {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .settings-card {
+    padding: 20px 16px;
+  }
+  .settings-form-footer {
+    justify-content: stretch;
+  }
+  .settings-form-footer button {
+    width: 100%;
   }
 }

@@ -1,12 +1,16 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { ExpenseForm } from "../components/expenses/ExpenseForm";
 import { useExpenses } from "../context/ExpenseContext";
 import { formatCurrency } from "../data/mockExpenses";
+import { calculateBudgetHealth } from "../utils/budgetHealth";
 import {
   Wallet,
   Sparkles,
   Sliders,
+  AlertTriangle,
+  AlertCircle,
+  CheckCircle2,
 } from "lucide-react";
 import "./AddExpense.css";
 
@@ -14,10 +18,29 @@ export const AddExpense = () => {
   const navigate = useNavigate();
   const { budget, expenses, settings } = useExpenses();
 
-  // Safe budget calculations handling budget === null
-  const totalSpent = expenses.reduce((sum, exp) => sum + Number(exp.amount), 0);
-  const hasBudget = Boolean(budget && typeof budget.monthlyBudget === "number");
-  const monthlyRemaining = hasBudget ? Math.max(0, budget.monthlyBudget - totalSpent) : null;
+  // Calculate monthly spending strictly for the current calendar month
+  const monthlyHealth = useMemo(() => {
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+    let monthlySpent = 0;
+    expenses.forEach((exp) => {
+      const d = new Date(exp.date);
+      if (d >= startOfMonth) {
+        monthlySpent += Number(exp.amount) || 0;
+      }
+    });
+
+    return calculateBudgetHealth({
+      budgetLimit: budget?.monthlyBudget,
+      spent: monthlySpent,
+      alertThreshold: budget?.alertThreshold || 80,
+      currencySymbol: settings.currencySymbol,
+    });
+  }, [expenses, budget, settings.currencySymbol]);
+
+  const hasBudget = monthlyHealth.isConfigured;
 
   return (
     <div className="add-expense-page animate-fade-in">
@@ -67,10 +90,29 @@ export const AddExpense = () => {
                   </span>
                 </div>
                 <div className="divider-line" />
-                <div className="budget-info-row highlight-row">
-                  <span className="info-row-label">Monthly Remaining</span>
-                  <span className="info-row-val remaining-val">
-                    {formatCurrency(monthlyRemaining, settings.currencySymbol)}
+                <div
+                  className={`budget-info-row highlight-row row-${monthlyHealth.status.toLowerCase()}`}
+                >
+                  <span className="info-row-label">
+                    {monthlyHealth.isExceeded ? "Monthly Status" : "Monthly Remaining"}
+                  </span>
+                  <span
+                    className={`info-row-val remaining-val val-${monthlyHealth.status.toLowerCase()}`}
+                  >
+                    {monthlyHealth.isExceeded
+                      ? `${formatCurrency(monthlyHealth.overAmount, settings.currencySymbol)} over`
+                      : formatCurrency(monthlyHealth.remaining, settings.currencySymbol)}
+                  </span>
+                </div>
+
+                <div className="budget-health-pill-row">
+                  <span
+                    className={`budget-pill pill-${monthlyHealth.status.toLowerCase()}`}
+                  >
+                    {monthlyHealth.isExceeded && <AlertCircle size={12} />}
+                    {monthlyHealth.isWarning && <AlertTriangle size={12} />}
+                    {monthlyHealth.isSafe && <CheckCircle2 size={12} />}
+                    <span>{monthlyHealth.alertLabel}</span>
                   </span>
                 </div>
               </div>

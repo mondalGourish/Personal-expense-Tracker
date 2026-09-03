@@ -9,16 +9,139 @@
   height: 100%;
 }
 
+.budget-progress-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Overall Monthly Banner */
+.budget-overall-banner {
+  padding: 14px 16px;
+  border-radius: var(--radius-md);
+  background-color: var(--bg-card-subtle);
+  border: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.banner-safe {
+  border-color: var(--success-border, #a7f3d0);
+  background-color: var(--success-bg, #ecfdf5);
+}
+
+.banner-warning {
+  border-color: var(--warning-border, #fde68a);
+  background-color: var(--warning-bg, #fffbeb);
+}
+
+.banner-exceeded {
+  border-color: var(--danger-border, #fecaca);
+  background-color: var(--danger-bg, #fef2f2);
+}
+
+.banner-top-row,
+.banner-bottom-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.banner-title-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.banner-cycle-label {
+  font-size: 0.775rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.banner-fraction {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.banner-fraction strong {
+  color: var(--text-primary);
+  font-weight: 800;
+}
+
+.health-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+}
+
+.badge-safe {
+  background-color: var(--success-bg);
+  color: var(--success);
+  border: 1px solid var(--success-border);
+}
+
+.badge-warning {
+  background-color: var(--warning-bg);
+  color: var(--warning);
+  border: 1px solid var(--warning-border);
+}
+
+.badge-exceeded {
+  background-color: var(--danger-bg);
+  color: var(--danger);
+  border: 1px solid var(--danger-border);
+}
+
+.percent-text {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.status-highlight-text {
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+.text-safe {
+  color: var(--success);
+}
+
+.text-warning {
+  color: var(--warning);
+}
+
+.text-exceeded {
+  color: var(--danger);
+}
+
+.category-section-label {
+  font-size: 0.775rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-top: 4px;
+}
+
 .budget-progress-list {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 16px;
 }
 
 .budget-progress-item {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 
 .budget-item-top {
@@ -42,7 +165,7 @@
 .budget-stats {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
 .budget-fraction {
@@ -55,23 +178,31 @@
 }
 
 .budget-percent-badge {
-  font-size: 0.775rem;
+  font-size: 0.75rem;
   font-weight: 700;
-  color: var(--text-secondary);
+  padding: 1px 6px;
+  border-radius: 4px;
 }
 
-.percent-warning {
+.badge-tag-safe {
+  color: var(--success);
+  background-color: var(--success-bg);
+}
+
+.badge-tag-warning {
   color: var(--warning);
+  background-color: var(--warning-bg);
 }
 
-.percent-exceeded {
+.badge-tag-exceeded {
   color: var(--danger);
+  background-color: var(--danger-bg);
 }
 
 .budget-track {
   width: 100%;
   height: 7px;
-  background-color: var(--bg-card-subtle);
+  background-color: var(--border-color);
   border-radius: var(--radius-full);
   overflow: hidden;
 }
@@ -79,5 +210,27 @@
 .budget-bar {
   height: 100%;
   border-radius: var(--radius-full);
-  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.bar-safe {
+  background-color: var(--primary, #10b981);
+}
+
+.bar-warning {
+  background-color: var(--warning, #f59e0b);
+}
+
+.bar-exceeded {
+  background-color: var(--danger, #ef4444);
+}
+
+.cat-budget-subline {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.cat-status-msg {
+  font-size: 0.725rem;
+  font-weight: 600;
 }

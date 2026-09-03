@@ -1,5 +1,5 @@
 .app-header {
-  height: var(--header-height);
+  height: var(--header-height, 76px);
   background-color: var(--bg-card);
   border-bottom: 1px solid var(--border-color);
   padding: 0 32px;
@@ -9,12 +9,14 @@
   position: sticky;
   top: 0;
   z-index: 50;
+  gap: 16px;
 }
 
 .header-left {
   display: flex;
   align-items: center;
   gap: 16px;
+  min-width: 0;
 }
 
 .mobile-menu-btn {
@@ -26,6 +28,12 @@
   border-radius: var(--radius-sm);
   color: var(--text-primary);
   background-color: var(--bg-card-subtle);
+  border: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.header-greeting-wrapper {
+  min-width: 0;
 }
 
 .header-title {
@@ -36,6 +44,9 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .greeting-wave {
@@ -59,15 +70,16 @@
 .header-right {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
+  flex-shrink: 0;
 }
 
 .dropdown-container {
   position: relative;
 }
 
-/* Date Range Button */
-.date-range-btn {
+/* Date Badge */
+.header-date-badge {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -78,12 +90,6 @@
   font-size: 0.8125rem;
   font-weight: 600;
   color: var(--text-secondary);
-  transition: var(--transition);
-}
-
-.date-range-btn:hover {
-  background-color: var(--border-subtle);
-  color: var(--text-primary);
 }
 
 .date-icon {
@@ -94,35 +100,18 @@
   color: var(--text-muted);
 }
 
-/* Notification & Action Buttons */
-.icon-action-btn {
+/* Notification Status Indicator */
+.header-notif-indicator {
   position: relative;
   width: 40px;
   height: 40px;
   border-radius: 50%;
   background-color: var(--bg-card-subtle);
   border: 1px solid var(--border-color);
-  color: var(--text-secondary);
+  color: var(--text-muted);
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: var(--transition);
-}
-
-.icon-action-btn:hover {
-  background-color: var(--border-subtle);
-  color: var(--text-primary);
-}
-
-.notification-badge {
-  position: absolute;
-  top: 9px;
-  right: 10px;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background-color: var(--primary);
-  border: 2px solid var(--bg-card);
 }
 
 /* User Profile Button */
@@ -133,6 +122,7 @@
   padding: 4px 8px 4px 4px;
   border-radius: var(--radius-full);
   transition: var(--transition);
+  cursor: pointer;
 }
 
 .user-profile-btn:hover {
@@ -143,7 +133,7 @@
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: var(--primary-gradient);
+  background: var(--primary, #10b981);
   color: #ffffff;
   display: flex;
   align-items: center;
@@ -169,9 +159,13 @@
   font-size: 0.875rem;
   font-weight: 700;
   color: var(--text-primary);
+  max-width: 120px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-/* Dropdown Menus */
+/* Profile Dropdown Menu */
 .dropdown-menu {
   position: absolute;
   top: calc(100% + 8px);
@@ -186,95 +180,6 @@
   padding: 6px;
 }
 
-.range-menu {
-  min-width: 160px;
-}
-
-.notifications-menu {
-  width: 320px;
-  padding: 0;
-}
-
-.dropdown-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px 16px;
-  border-bottom: 1px solid var(--border-color);
-}
-
-.dropdown-title {
-  font-size: 0.875rem;
-  font-weight: 700;
-  color: var(--text-primary);
-}
-
-.badge-count {
-  font-size: 0.75rem;
-  font-weight: 600;
-  padding: 2px 8px;
-  background-color: var(--primary-100);
-  color: var(--primary-700);
-  border-radius: var(--radius-full);
-}
-
-.notifications-list {
-  max-height: 280px;
-  overflow-y: auto;
-}
-
-.notification-item {
-  display: flex;
-  gap: 12px;
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--border-subtle);
-  transition: var(--transition);
-}
-
-.notification-item:hover {
-  background-color: var(--bg-card-subtle);
-}
-
-.notification-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  margin-top: 6px;
-  flex-shrink: 0;
-}
-
-.dot-warning { background-color: var(--warning); }
-.dot-info { background-color: var(--info); }
-.dot-success { background-color: var(--success); }
-
-.notification-content {
-  flex: 1;
-}
-
-.notification-title-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 2px;
-}
-
-.notif-title {
-  font-size: 0.8125rem;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-.notif-time {
-  font-size: 0.7rem;
-  color: var(--text-muted);
-}
-
-.notif-text {
-  font-size: 0.775rem;
-  color: var(--text-secondary);
-  line-height: 1.4;
-}
-
 .profile-menu {
   width: 240px;
   padding: 8px;
@@ -287,15 +192,25 @@
   padding: 8px;
 }
 
+.profile-text-group {
+  min-width: 0;
+}
+
 .profile-name {
   font-size: 0.9375rem;
   font-weight: 700;
   color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .profile-email {
   font-size: 0.75rem;
   color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .dropdown-divider {
@@ -307,24 +222,20 @@
 .dropdown-item {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 10px;
   width: 100%;
-  padding: 8px 12px;
+  padding: 10px 12px;
   border-radius: var(--radius-sm);
   font-size: 0.8125rem;
   font-weight: 600;
   color: var(--text-secondary);
   transition: var(--transition);
+  cursor: pointer;
 }
 
 .dropdown-item:hover {
   background-color: var(--bg-card-subtle);
   color: var(--text-primary);
-}
-
-.dropdown-item.active {
-  color: var(--primary);
-  background-color: var(--primary-50);
 }
 
 .dropdown-item.danger-item {
@@ -336,7 +247,7 @@
   color: var(--danger);
 }
 
-/* Mobile Responsive */
+/* Responsive */
 @media (max-width: 991px) {
   .app-header {
     padding: 0 16px;
@@ -353,8 +264,32 @@
   .header-title {
     font-size: 1.1rem;
   }
+}
 
-  .date-text {
+@media (max-width: 640px) {
+  .header-date-badge {
+    display: none;
+  }
+
+  .header-notif-indicator {
+    display: none;
+  }
+
+  .user-info-text,
+  .user-profile-btn .chevron-icon {
+    display: none;
+  }
+
+  .user-profile-btn {
+    padding: 0;
+  }
+}
+
+@media (max-width: 380px) {
+  .header-title {
+    font-size: 0.95rem;
+  }
+  .greeting-wave {
     display: none;
   }
 }

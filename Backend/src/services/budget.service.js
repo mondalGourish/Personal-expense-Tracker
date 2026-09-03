@@ -223,6 +223,8 @@ async function calculateBudgetStatus(userId, referenceDate = new Date()) {
           ? Number(((cat.spent / limit) * 100).toFixed(2))
           : limit === 0 && cat.spent > 0
           ? 100
+          : limit === 0
+          ? 0
           : null,
     };
   });

@@ -33,7 +33,10 @@ const budgetSchema = new mongoose.Schema(
     },
     categoryBudgets: {
       type: Map,
-      of: Number,
+      of: {
+        type: Number,
+        min: [0, "Category budget cannot be negative"],
+      },
       default: {},
     },
   },

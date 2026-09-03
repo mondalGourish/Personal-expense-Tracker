@@ -81,7 +81,7 @@ export const Register = () => {
   ];
 
   return (
-    <div className="auth-page animate-fade-in">
+    <main className="auth-page animate-fade-in">
       {/* Left decorative panel */}
       <div className="auth-panel-left">
         <div className="auth-brand">
@@ -272,6 +272,6 @@ export const Register = () => {
           </form>
         </div>
       </div>
-    </div>
+    </main>
   );
 };
