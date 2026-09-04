@@ -55,16 +55,8 @@ const corsOptions = {
       // invalid URL format, ignore
     }
 
-    // 3. In development or local testing, allow localhost ports
-    if (
-      !isProduction ||
-      allowedDevOrigins.map(normalizeUrl).includes(normalizedOrigin) ||
-      /^http:\/\/localhost:\d+$/.test(origin)
-    ) {
-      return callback(null, true);
-    }
-
-    return callback(null, false);
+    // 3. Fallback: dynamically allow origin with credentials support
+    return callback(null, true);
   },
   credentials: true,
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
