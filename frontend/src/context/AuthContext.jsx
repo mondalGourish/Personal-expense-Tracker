@@ -61,6 +61,16 @@ export const AuthProvider = ({ children }) => {
     return data;
   }, []);
 
+  const verifyEmail = useCallback(async (email, otp) => {
+    const res = await authService.verifyEmail(email, otp);
+    if (res?.data?.user) {
+      localStorage.setItem("has_session", "true");
+      setUser(res.data.user);
+    }
+    setAuthError(null);
+    return res;
+  }, []);
+
   const logout = useCallback(async () => {
     try {
       await authService.logout();
@@ -82,6 +92,7 @@ export const AuthProvider = ({ children }) => {
         isAuthenticated: Boolean(user),
         login,
         register,
+        verifyEmail,
         logout,
         retryAuth: restoreSession,
       }}

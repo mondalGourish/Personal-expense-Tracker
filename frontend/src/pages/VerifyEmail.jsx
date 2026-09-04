@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, useSearchParams, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import * as authService from "../services/auth.service";
 import {
   Wallet,
@@ -16,6 +17,7 @@ import "./Auth.css";
 export const VerifyEmail = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { verifyEmail } = useAuth();
 
   const [email, setEmail] = useState(searchParams.get("email") || "");
   const [otp, setOtp] = useState("");
@@ -50,11 +52,11 @@ export const VerifyEmail = () => {
     setLoading(true);
 
     try {
-      const res = await authService.verifyEmail(email.trim(), otp.trim());
-      setSuccess(res.message || "Email verified successfully! Redirecting to login...");
+      const res = await verifyEmail(email.trim(), otp.trim());
+      setSuccess(res.message || "Email verified successfully! Redirecting to dashboard...");
       setTimeout(() => {
-        navigate("/login", { replace: true });
-      }, 2000);
+        navigate("/", { replace: true });
+      }, 1000);
     } catch (err) {
       setError(err.message || "Verification failed. Please check your code.");
     } finally {

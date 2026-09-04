@@ -4,32 +4,51 @@
   right: 28px;
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 12px 18px;
+  gap: 12px;
+  padding: 14px 20px;
   border-radius: var(--radius-md);
-  background-color: var(--text-primary);
-  color: var(--text-inverse);
-  box-shadow: var(--shadow-xl);
+  background-color: var(--card);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.35), 0 8px 10px -6px rgba(0, 0, 0, 0.2);
   font-size: 0.875rem;
   font-weight: 600;
   z-index: 2000;
   border-left: 4px solid var(--primary);
+  backdrop-filter: blur(8px);
+}
+
+.toast-message {
+  color: var(--text-primary);
+  line-height: 1.4;
 }
 
 .toast-success {
   border-left-color: var(--success);
 }
+.toast-success .toast-icon {
+  color: var(--success);
+}
 
 .toast-warning {
   border-left-color: var(--warning);
+}
+.toast-warning .toast-icon {
+  color: var(--warning);
 }
 
 .toast-danger {
   border-left-color: var(--danger);
 }
+.toast-danger .toast-icon {
+  color: var(--danger);
+}
 
 .toast-info {
   border-left-color: var(--info);
+}
+.toast-info .toast-icon {
+  color: var(--info);
 }
 
 .toast-icon {

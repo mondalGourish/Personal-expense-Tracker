@@ -7,6 +7,7 @@ const http = require("http");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 dotenv.config();
+process.env.NODE_ENV = "test";
 
 const express = require("express");
 const cookieParser = require("cookie-parser");

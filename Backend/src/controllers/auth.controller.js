@@ -180,9 +180,21 @@ const verifyEmail = async (req, res, next) => {
     user.otpLastSentAt = undefined;
     await user.save();
 
+    // Automatically establish authenticated session cookie
+    issueTokenCookie(res, user._id);
+
     res.status(200).json({
       success: true,
-      message: "Email verified successfully! You can now sign in.",
+      message: "Email verified successfully! Redirecting to dashboard...",
+      data: {
+        user: {
+          _id: user._id,
+          name: user.name,
+          email: user.email,
+          isEmailVerified: user.isEmailVerified,
+          createdAt: user.createdAt,
+        },
+      },
     });
   } catch (error) {
     next(error);

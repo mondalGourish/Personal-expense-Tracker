@@ -112,12 +112,37 @@
   --text-primary: #f8fafc;
   --text-secondary: #94a3b8;
   --text-muted: #64748b;
+  --text-inverse: #0f172a;
   --shadow-card: 0 4px 14px rgba(0, 0, 0, 0.45);
   --sidebar: #070b14;
   --sidebar-bg: #070b14;
   --sidebar-border: #111a2e;
   --primary-50: rgba(16, 185, 129, 0.12);
   --primary-100: rgba(16, 185, 129, 0.2);
+
+  /* Dark theme semantic status badges & alerts */
+  --success: #10b981;
+  --success-bg: rgba(16, 185, 129, 0.15);
+  --success-border: rgba(16, 185, 129, 0.3);
+  --warning: #f59e0b;
+  --warning-bg: rgba(245, 158, 11, 0.15);
+  --warning-border: rgba(245, 158, 11, 0.3);
+  --danger: #ef4444;
+  --danger-bg: rgba(239, 68, 68, 0.15);
+  --danger-border: rgba(239, 68, 68, 0.3);
+  --info: #0ea5e9;
+  --info-bg: rgba(14, 165, 233, 0.15);
+  --info-border: rgba(14, 165, 233, 0.3);
+
+  /* Dark theme category backgrounds */
+  --cat-food-bg: rgba(16, 185, 129, 0.15);
+  --cat-transport-bg: rgba(14, 165, 233, 0.15);
+  --cat-shopping-bg: rgba(5, 150, 105, 0.15);
+  --cat-bills-bg: rgba(244, 63, 94, 0.15);
+  --cat-health-bg: rgba(20, 184, 166, 0.15);
+  --cat-groceries-bg: rgba(245, 158, 11, 0.15);
+  --cat-education-bg: rgba(99, 102, 241, 0.15);
+  --cat-other-bg: rgba(100, 116, 139, 0.15);
 }
 
 /* Global Reset & Base Styles */

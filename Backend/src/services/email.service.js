@@ -25,6 +25,7 @@ function clearTestEmails() {
  */
 async function sendEmail({ to, subject, text, html }) {
   const isConfigured = Boolean(
+    process.env.NODE_ENV !== "test" &&
     process.env.SMTP_HOST &&
     process.env.SMTP_USER &&
     process.env.SMTP_PASS
