@@ -8,7 +8,16 @@ const User = require("../models/user.model");
  */
 const authenticate = async (req, res, next) => {
   try {
-    const token = req.cookies?.token;
+    // 1. Check HTTP-only cookie
+    let token = req.cookies?.token;
+    console.log(token)
+    // 2. Fallback to Authorization: Bearer <token> header for cross-domain clients
+    if (!token && req.headers.authorization) {
+      const parts = req.headers.authorization.split(" ");
+      if (parts.length === 2 && /^Bearer$/i.test(parts[0])) {
+        token = parts[1];
+      }
+    }
 
     if (!token) {
       return res.status(401).json({

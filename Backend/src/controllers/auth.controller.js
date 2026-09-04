@@ -8,11 +8,12 @@ const emailService = require("../services/email.service");
  * Cookie options helper.
  */
 const getCookieOptions = () => {
-  const isProduction = process.env.NODE_ENV === "production";
+  const isProduction = process.env.NODE_ENV === "production" || Boolean(process.env.RENDER);
   return {
     httpOnly: true,
     secure: isProduction,
-    sameSite: isProduction && process.env.CROSS_SITE_COOKIE === "true" ? "none" : "lax",
+    sameSite: isProduction ? "none" : "lax",
+    partitioned: isProduction,
   };
 };
 
@@ -28,6 +29,8 @@ const issueTokenCookie = (res, userId) => {
     ...getCookieOptions(),
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in ms
   });
+
+  return token;
 };
 
 /**
@@ -181,12 +184,13 @@ const verifyEmail = async (req, res, next) => {
     await user.save();
 
     // Automatically establish authenticated session cookie
-    issueTokenCookie(res, user._id);
+    const token = issueTokenCookie(res, user._id);
 
     res.status(200).json({
       success: true,
       message: "Email verified successfully! Redirecting to dashboard...",
       data: {
+        token,
         user: {
           _id: user._id,
           name: user.name,
@@ -302,12 +306,13 @@ const login = async (req, res, next) => {
     }
 
     // Issue JWT cookie
-    issueTokenCookie(res, user._id);
+    const token = issueTokenCookie(res, user._id);
 
     res.status(200).json({
       success: true,
       message: "Logged in successfully",
       data: {
+        token,
         user: {
           _id: user._id,
           name: user.name,

@@ -49,6 +49,9 @@ export const AuthProvider = ({ children }) => {
   const login = useCallback(async (email, password) => {
     const data = await authService.login(email, password);
     localStorage.setItem("has_session", "true");
+    if (data?.data?.token) {
+      localStorage.setItem("auth_token", data.data.token);
+    }
     setUser(data.data.user);
     setAuthError(null);
     return data;
@@ -65,6 +68,9 @@ export const AuthProvider = ({ children }) => {
     const res = await authService.verifyEmail(email, otp);
     if (res?.data?.user) {
       localStorage.setItem("has_session", "true");
+      if (res.data.token) {
+        localStorage.setItem("auth_token", res.data.token);
+      }
       setUser(res.data.user);
     }
     setAuthError(null);
@@ -78,6 +84,7 @@ export const AuthProvider = ({ children }) => {
       console.warn("Logout request failed, clearing local state:", err.message);
     } finally {
       localStorage.removeItem("has_session");
+      localStorage.removeItem("auth_token");
       setUser(null);
       setAuthError(null);
     }
