@@ -18,6 +18,8 @@ app.use(cookieParser());
 // CORS Configuration
 const isProduction = process.env.NODE_ENV === "production";
 
+const normalizeUrl = (url) => (url ? url.trim().replace(/\/+$/, "") : "");
+
 const allowedDevOrigins = [
   "http://localhost:5173",
   "http://localhost:5174",
@@ -31,23 +33,38 @@ const corsOptions = {
     // Allow requests with no origin (e.g. mobile apps, curl, server-to-server)
     if (!origin) return callback(null, true);
 
-    if (isProduction) {
-      // In production, strictly match the configured CLIENT_URL
-      if (process.env.CLIENT_URL && origin === process.env.CLIENT_URL) {
-        return callback(null, true);
-      }
-      return callback(new Error(`CORS policy does not allow access from origin ${origin}`));
-    } else {
-      // In development, allow localhost origins or CLIENT_URL
-      if (
-        allowedDevOrigins.includes(origin) ||
-        (process.env.CLIENT_URL && origin === process.env.CLIENT_URL) ||
-        /^http:\/\/localhost:\d+$/.test(origin)
-      ) {
-        return callback(null, true);
-      }
-      return callback(new Error(`CORS policy does not allow access from origin ${origin}`));
+    const clientUrls = (process.env.CLIENT_URL || "")
+      .split(",")
+      .map((u) => normalizeUrl(u))
+      .filter(Boolean);
+
+    const normalizedOrigin = normalizeUrl(origin);
+
+    // 1. Explicitly configured client URLs
+    if (clientUrls.includes(normalizedOrigin)) {
+      return callback(null, true);
     }
+
+    // 2. Allow any vercel.app deployment domain
+    try {
+      const parsedHostname = new URL(origin).hostname;
+      if (parsedHostname.endsWith(".vercel.app") || parsedHostname === "localhost") {
+        return callback(null, true);
+      }
+    } catch {
+      // invalid URL format, ignore
+    }
+
+    // 3. In development or local testing, allow localhost ports
+    if (
+      !isProduction ||
+      allowedDevOrigins.map(normalizeUrl).includes(normalizedOrigin) ||
+      /^http:\/\/localhost:\d+$/.test(origin)
+    ) {
+      return callback(null, true);
+    }
+
+    return callback(null, false);
   },
   credentials: true,
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
