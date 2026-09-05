@@ -27,21 +27,34 @@ function getTransporter() {
   if (cachedTransporter) return cachedTransporter;
 
   const nodemailer = require("nodemailer");
-  const port = Number(process.env.SMTP_PORT) || 587;
-  cachedTransporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port,
-    secure: port === 465,
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
-    },
-    // Set robust connection and socket timeouts to prevent indefinite buffering/hanging
-    connectionTimeout: 8000,
-    greetingTimeout: 8000,
-    socketTimeout: 10000,
-  });
+  const host = process.env.SMTP_HOST || "";
+  const isGmail = host.toLowerCase().includes("gmail");
 
+  const transportOptions = isGmail
+    ? {
+        service: "gmail",
+        auth: {
+          user: process.env.SMTP_USER,
+          pass: process.env.SMTP_PASS,
+        },
+        connectionTimeout: 10000,
+        greetingTimeout: 10000,
+        socketTimeout: 15000,
+      }
+    : {
+        host: process.env.SMTP_HOST,
+        port: Number(process.env.SMTP_PORT) || 587,
+        secure: Number(process.env.SMTP_PORT) === 465,
+        auth: {
+          user: process.env.SMTP_USER,
+          pass: process.env.SMTP_PASS,
+        },
+        connectionTimeout: 10000,
+        greetingTimeout: 10000,
+        socketTimeout: 15000,
+      };
+
+  cachedTransporter = nodemailer.createTransport(transportOptions);
   return cachedTransporter;
 }
 
@@ -56,22 +69,26 @@ async function sendEmail({ to, subject, text, html }) {
     process.env.SMTP_PASS
   );
 
+  let sendResult = { success: true, mode: "development" };
+
   if (isConfigured) {
     try {
       const transporter = getTransporter();
+      const fromAddress =
+        process.env.EMAIL_FROM || `"ExpenseTrack" <${process.env.SMTP_USER}>`;
 
       await transporter.sendMail({
-        from: process.env.EMAIL_FROM || '"ExpenseTrack" <no-reply@expensetrack.app>',
+        from: fromAddress,
         to,
         subject,
         text,
         html,
       });
 
-      return { success: true, mode: "smtp" };
+      sendResult = { success: true, mode: "smtp" };
     } catch (error) {
       console.error("⚠️ SMTP email sending error:", error.message);
-      // If cached transporter failed on stale socket, reset cache for next attempt
+      // Reset cached transporter so subsequent retries recreate connection
       cachedTransporter = null;
       if (process.env.NODE_ENV === "production") {
         throw new Error("Failed to send email. Please try again later.");
@@ -79,12 +96,12 @@ async function sendEmail({ to, subject, text, html }) {
     }
   }
 
-  // Development / Test mode safe fallback
+  // Development / Test mode safe logger
   if (process.env.NODE_ENV !== "production") {
     console.log(`✉️  [EmailService] ${subject} -> ${to}`);
   }
 
-  return { success: true, mode: "development" };
+  return sendResult;
 }
 
 /**
@@ -92,6 +109,10 @@ async function sendEmail({ to, subject, text, html }) {
  */
 async function sendVerificationEmail(toEmail, otp) {
   recordTestEmail(toEmail, "EMAIL_VERIFICATION", otp);
+
+  if (process.env.NODE_ENV !== "production") {
+    console.log(`🔑 [EmailService] Verification OTP for ${toEmail}: ${otp}`);
+  }
 
   const subject = "Verify your ExpenseTrack account";
   const text = `Welcome to ExpenseTrack! Your 6-digit verification code is: ${otp}\n\nThis code will expire in 10 minutes.\nIf you did not sign up for ExpenseTrack, please ignore this email.`;
@@ -125,6 +146,10 @@ async function sendVerificationEmail(toEmail, otp) {
  */
 async function sendPasswordResetEmail(toEmail, otp) {
   recordTestEmail(toEmail, "PASSWORD_RESET", otp);
+
+  if (process.env.NODE_ENV !== "production") {
+    console.log(`🔑 [EmailService] Password Reset OTP for ${toEmail}: ${otp}`);
+  }
 
   const subject = "Your ExpenseTrack Password Reset Code";
   const text = `You requested a password reset for ExpenseTrack. Your 6-digit reset code is: ${otp}\n\nThis code will expire in 10 minutes.\nIf you did not request this password reset, please secure your account immediately.`;
