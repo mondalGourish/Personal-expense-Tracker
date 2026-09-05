@@ -20,6 +20,31 @@ function clearTestEmails() {
   testEmailStore.clear();
 }
 
+// Cached SMTP transporter instance
+let cachedTransporter = null;
+
+function getTransporter() {
+  if (cachedTransporter) return cachedTransporter;
+
+  const nodemailer = require("nodemailer");
+  const port = Number(process.env.SMTP_PORT) || 587;
+  cachedTransporter = nodemailer.createTransport({
+    host: process.env.SMTP_HOST,
+    port,
+    secure: port === 465,
+    auth: {
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASS,
+    },
+    // Set robust connection and socket timeouts to prevent indefinite buffering/hanging
+    connectionTimeout: 8000,
+    greetingTimeout: 8000,
+    socketTimeout: 10000,
+  });
+
+  return cachedTransporter;
+}
+
 /**
  * Send an email using configured SMTP provider or dev fallback.
  */
@@ -33,17 +58,7 @@ async function sendEmail({ to, subject, text, html }) {
 
   if (isConfigured) {
     try {
-      // Dynamic require so missing nodemailer in lightweight environments won't crash
-      const nodemailer = require("nodemailer");
-      const transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST,
-        port: Number(process.env.SMTP_PORT) || 587,
-        secure: Number(process.env.SMTP_PORT) === 465,
-        auth: {
-          user: process.env.SMTP_USER,
-          pass: process.env.SMTP_PASS,
-        },
-      });
+      const transporter = getTransporter();
 
       await transporter.sendMail({
         from: process.env.EMAIL_FROM || '"ExpenseTrack" <no-reply@expensetrack.app>',
@@ -56,7 +71,8 @@ async function sendEmail({ to, subject, text, html }) {
       return { success: true, mode: "smtp" };
     } catch (error) {
       console.error("⚠️ SMTP email sending error:", error.message);
-      // In development, do not crash the request if SMTP provider fails
+      // If cached transporter failed on stale socket, reset cache for next attempt
+      cachedTransporter = null;
       if (process.env.NODE_ENV === "production") {
         throw new Error("Failed to send email. Please try again later.");
       }
@@ -65,7 +81,6 @@ async function sendEmail({ to, subject, text, html }) {
 
   // Development / Test mode safe fallback
   if (process.env.NODE_ENV !== "production") {
-    // Only log high-level notification, never expose raw secrets
     console.log(`✉️  [EmailService] ${subject} -> ${to}`);
   }
 

@@ -69,9 +69,42 @@ const register = async (req, res, next) => {
     // Check for existing user
     const existingUser = await User.findOne({ email: normalizedEmail });
     if (existingUser) {
-      return res.status(409).json({
-        success: false,
-        error: "An account with this email address already exists",
+      if (existingUser.isEmailVerified) {
+        return res.status(409).json({
+          success: false,
+          error: "An account with this email address already exists. Please log in.",
+        });
+      }
+
+      // If user exists but is unverified, refresh credentials and issue new OTP
+      const hashedPassword = await bcrypt.hash(password, 10);
+      const otp = generate6DigitOtp();
+      const otpHash = hashValue(otp);
+      const otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+      existingUser.name = name;
+      existingUser.password = hashedPassword;
+      existingUser.otpHash = otpHash;
+      existingUser.otpExpiresAt = otpExpiresAt;
+      existingUser.otpPurpose = "EMAIL_VERIFICATION";
+      existingUser.otpAttempts = 0;
+      existingUser.otpLastSentAt = new Date();
+      await existingUser.save();
+
+      // Dispatch verification email safely
+      try {
+        await emailService.sendVerificationEmail(normalizedEmail, otp);
+      } catch (emailErr) {
+        console.error("⚠️ Failed to dispatch verification email:", emailErr.message);
+      }
+
+      return res.status(200).json({
+        success: true,
+        message: "Verification code sent. Please check your email to verify your account.",
+        data: {
+          email: existingUser.email,
+          isEmailVerified: false,
+        },
       });
     }
 
@@ -95,8 +128,12 @@ const register = async (req, res, next) => {
       otpLastSentAt: new Date(),
     });
 
-    // Send verification email
-    await emailService.sendVerificationEmail(normalizedEmail, otp);
+    // Send verification email safely without blocking on failure
+    try {
+      await emailService.sendVerificationEmail(normalizedEmail, otp);
+    } catch (emailErr) {
+      console.error("⚠️ Failed to dispatch verification email on register:", emailErr.message);
+    }
 
     // Note: Do NOT issue JWT auth cookie until email is verified
     res.status(201).json({
@@ -255,7 +292,11 @@ const resendVerification = async (req, res, next) => {
     await user.save();
 
     // Send email
-    await emailService.sendVerificationEmail(normalizedEmail, otp);
+    try {
+      await emailService.sendVerificationEmail(normalizedEmail, otp);
+    } catch (emailErr) {
+      console.error("⚠️ Failed to send verification email:", emailErr.message);
+    }
 
     res.status(200).json({
       success: true,
@@ -374,7 +415,11 @@ const forgotPassword = async (req, res, next) => {
     await user.save();
 
     // Send reset email
-    await emailService.sendPasswordResetEmail(normalizedEmail, otp);
+    try {
+      await emailService.sendPasswordResetEmail(normalizedEmail, otp);
+    } catch (emailErr) {
+      console.error("⚠️ Failed to send password reset email:", emailErr.message);
+    }
 
     res.status(200).json({
       success: true,
